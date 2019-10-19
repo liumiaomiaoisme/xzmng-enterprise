@@ -1,6 +1,6 @@
 <template>
-  <div class="app">
-    <router-view></router-view>
+  <div>
+    <el-button type="danger" size="small">批量删除</el-button>
   </div>
 </template>
 
@@ -11,7 +11,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .app{
-    height: 100%;
-  }
+
 </style>
