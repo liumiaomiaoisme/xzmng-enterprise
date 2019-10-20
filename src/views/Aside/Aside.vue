@@ -2,7 +2,7 @@
   <el-row>
     <el-col :span="24">
       <el-menu
-        default-active="1"
+        default-active="0"
         class="el-menu-vertical-demo"
         @open="handleOpen"
         @close="handleClose"

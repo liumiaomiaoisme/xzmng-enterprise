@@ -7,7 +7,8 @@
         </el-row>
         <el-row class="main-container">
             <transition name="fade-transform" mode="out-in">
-                <router-view :key="key"/>
+<!--                <router-view :key="key"/>-->
+              <router-view></router-view>
             </transition>
         </el-row>
     </div>
