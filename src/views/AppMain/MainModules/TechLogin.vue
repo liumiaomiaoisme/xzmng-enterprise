@@ -115,6 +115,7 @@ export default {
         this.loading = false
         if (res.data.statuscode === 200) {
           this.$store.commit('login', res.data.content.accessToken)
+          console.log(1)
           this.$router.push({
             path: '/Tech/TechHome'
           })

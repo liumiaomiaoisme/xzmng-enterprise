@@ -11,6 +11,9 @@ axios.interceptors.request.use((config) => {
   if (config.method === 'post') {
     config.data = qs.stringify(config.data)
   }
+  if (localStorage.getItem('token')) {
+    config.headers.token = localStorage.getItem('token')
+  }
   return config
 }, (error) => {
   console.log('错误的传参')
@@ -20,8 +23,8 @@ axios.interceptors.request.use((config) => {
 // 返回状态判断(添加响应拦截器)
 axios.interceptors.response.use((res) => {
   // 对响应数据做些事
-  if (!res.data.success) {
-    return Promise.resolve(res)
+  if (res.status !== 200) {
+    return Promise.reject(res)// 这里应该是reject(res)
   }
   return res
 }, (error) => {

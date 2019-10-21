@@ -44,10 +44,7 @@ router.beforeEach((to, from, next) => {
     if (store.state.token) {
       next()
     } else {
-      // next({
-      //   path: '/Tech/TechLogin'
-      // })
-      next()
+      next('/Tech/TechLogin')
     }
   } else {
     next()
