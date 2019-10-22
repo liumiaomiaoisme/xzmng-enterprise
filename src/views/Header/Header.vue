@@ -4,7 +4,7 @@
       <el-col :span="6"><h3>技术管理系统</h3></el-col>
       <el-col :span="6" class="text-push-right">
         <el-avatar :size="36" :src="circleUrl"></el-avatar>
-        <span class="username">admin{{this.$store.state.username}}</span>
+        <span class="username">{{this.$store.state.username}}</span>
         <el-dropdown>
           <span class="el-dropdown-link text-lg text-color">
             <i class="el-icon-arrow-down el-icon--right"></i>

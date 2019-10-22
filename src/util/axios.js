@@ -1,19 +1,23 @@
 import axios from 'axios'
-import qs from 'qs'
+// import qs from 'qs'
 
 axios.defaults.timeout = 5000 // 响应时间
-axios.defaults.headers.post['Content-Type'] = 'application/json' // 配置请求头
 axios.defaults.baseURL = 'http://47.100.56.42:8068' // 配置接口地址
 
 // POST传参序列化(添加请求拦截器)
 axios.interceptors.request.use((config) => {
   // 在发送请求之前做某件事
-  if (config.method === 'post') {
-    config.data = qs.stringify(config.data)
-  }
   if (localStorage.getItem('token')) {
     config.headers.token = localStorage.getItem('token')
   }
+  if (config.method === 'post') {
+    // config.data = qs.stringify(config.data)
+    config.headers['Content-Type'] = 'application/json'// 配置请求头
+  }
+  // if (config.method === 'get') {
+  //   config.data = qs.stringify(config.data)
+  //   config.headers['Content-Type'] = 'application/json'
+  // }
   return config
 }, (error) => {
   console.log('错误的传参')

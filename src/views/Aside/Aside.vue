@@ -25,13 +25,13 @@ export default {
   data () {
     return {
       menuGroup: [
-        { itemName: '项目列表', itemRouter: '/Tech/TechHome/ProjectsList', itemIcon: 'el-icon-s-order' },
-        { itemName: '需求列表', itemRouter: '/Tech/TechHome/RequirementsList', itemIcon: 'el-icon-s-opportunity' },
-        { itemName: '组管理', itemRouter: '/Tech/TechHome/TeamManagement', itemIcon: 'el-icon-s-custom' },
-        { itemName: '产品列表', itemRouter: '/Tech/TechHome/ProductsList', itemIcon: 'el-icon-s-flag' },
-        { itemName: '会议列表', itemRouter: '/Tech/TechHome/MeetingList', itemIcon: 'el-icon-s-management' },
-        { itemName: '知识分享', itemRouter: '/Tech/TechHome/KnowledgeShare', itemIcon: 'el-icon-s-claim' },
-        { itemName: '项目阶段列表', itemRouter: '/Tech/TechHome/ProjectPhaseList', itemIcon: 'el-icon-s-marketing' }]
+        { itemName: '项目列表', itemRouter: '/TechHome/ProjectsList', itemIcon: 'el-icon-s-order' },
+        { itemName: '需求列表', itemRouter: '/TechHome/RequirementsList', itemIcon: 'el-icon-s-opportunity' },
+        { itemName: '组管理', itemRouter: '/TechHome/TeamManagement', itemIcon: 'el-icon-s-custom' },
+        { itemName: '产品列表', itemRouter: '/TechHome/ProductsList', itemIcon: 'el-icon-s-flag' },
+        { itemName: '会议列表', itemRouter: '/TechHome/MeetingList', itemIcon: 'el-icon-s-management' },
+        { itemName: '知识分享', itemRouter: '/TechHome/KnowledgeShare', itemIcon: 'el-icon-s-claim' },
+        { itemName: '项目阶段列表', itemRouter: '/TechHome/ProjectPhaseList', itemIcon: 'el-icon-s-marketing' }]
     }
   },
   methods: {

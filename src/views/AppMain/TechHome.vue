@@ -8,7 +8,11 @@
         <home-aside></home-aside>
       </el-aside>
       <el-main>
-        <tech-main></tech-main>
+        <el-row class="main-container">
+            <transition name="fade-transform" mode="out-in">
+              <router-view></router-view>
+            </transition>
+        </el-row>
       </el-main>
     </el-container>
   </el-container>
@@ -16,7 +20,6 @@
 <script>
 import HomeAside from '@/views/Aside/Aside'
 import HomeHeader from '@/views/Header/Header'
-import TechMain from '@/components/TechContainer/TechMain'
 export default {
   data () {
     return {
@@ -29,8 +32,7 @@ export default {
   },
   components: {
     HomeAside,
-    HomeHeader,
-    TechMain
+    HomeHeader
   }
 }
 </script>
@@ -47,7 +49,22 @@ export default {
       overflow: hidden;
     }
     .el-main{
-      min-width:600px;
+      overflow: hidden;
+      .fade-transform-leave-active,
+      .fade-transform-enter-active {
+        transition: all .5s;
+      }
+      .fade-transform-enter {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      .fade-transform-leave-to {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      .main-header.el-row{
+          background-color: #f1f1f1;
+      }
     }
     .el-aside{
       background-color: #545c64;
