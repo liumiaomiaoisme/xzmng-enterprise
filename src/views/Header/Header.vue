@@ -1,30 +1,12 @@
 <template>
-  <el-row>
+  <el-row class="header-container">
     <el-row type="flex" class="row-bg" justify="space-between">
-      <el-col :span="6"><h4>技术管理系统</h4></el-col>
-      <el-col>
-      <el-menu :default-active="activeIndex" mode="horizontal" background-color="#000" active-text-color>
-        <el-menu-item index="1">人事管理</el-menu-item>
-        <el-submenu index="2">
-          <template slot="title">我的工作台</template>
-          <el-menu-item index="2-1">选项1</el-menu-item>
-          <el-menu-item index="2-2">选项2</el-menu-item>
-          <el-menu-item index="2-3">选项3</el-menu-item>
-          <el-submenu index="2-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="2-4-1">选项1</el-menu-item>
-            <el-menu-item index="2-4-2">选项2</el-menu-item>
-            <el-menu-item index="2-4-3">选项3</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-        <el-menu-item index="3" disabled>消息中心</el-menu-item>
-        <el-menu-item index="4"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
-      </el-menu>
-      </el-col>
+      <el-col :span="6"><h3>技术管理系统</h3></el-col>
       <el-col :span="6" class="text-push-right">
+        <el-avatar :size="36" :src="circleUrl"></el-avatar>
+        <span class="username">admin{{this.$store.state.username}}</span>
         <el-dropdown>
           <span class="el-dropdown-link text-lg text-color">
-            admin
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
@@ -32,7 +14,7 @@
               <a href="#">个人信息</a>
             </el-dropdown-item>
             <el-dropdown-item>
-              <a href="#">退出</a>
+              <a href="#" @click="logout">退出</a>
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -42,15 +24,18 @@
 </template>
 
 <style lang="scss">
-  ul.el-menu.el-menu--horizontal{
-    height: 40px;
-    line-height: 40px;
-
-    .el-menu-item,
-    .el-submenu__title{
-      height: 40px;
-      line-height: 40px;
+  .header-container{
+    .el-avatar{
+      vertical-align: middle;
+    }
+    .username{
       color: #fff;
+      vertical-align: middle;
+      padding:0 10px;
+    }
+    .el-icon-arrow-down{
+      vertical-align: middle;
+      color:#409EFF;
     }
   }
 </style>
@@ -59,7 +44,14 @@
 export default {
   data () {
     return {
-      activeIndex: '1'
+      activeIndex: '1',
+      circleUrl: ''
+    }
+  },
+  methods: {
+    logout () {
+      this.$store.commit('logout')
+      this.$router.push({ path: '/Tech/TechLogin' })
     }
   }
 }

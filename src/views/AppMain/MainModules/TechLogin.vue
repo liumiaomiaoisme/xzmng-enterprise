@@ -100,7 +100,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (!valid) {
           this.loading = false
-          console.log('error submit!!')
+          // console.log('error submit!!')
           return false
         }
       })
@@ -108,31 +108,29 @@ export default {
     handleLogin () {
       this.loading = true
       this.submitForm('loginForm')
-      this.$axios.fetchPost('http://47.100.56.42:8068/oauth/token', {
+      this.$axios.fetchPost('/oauth/token', {
         username: this.loginForm.username,
         password: this.loginForm.password
-      }).then((res) => {
-        this.loading = false
-        if (res.data.statuscode === 200) {
-          this.$store.commit('login', res.data.content.accessToken)
-          console.log(1)
-          this.$router.push({
-            path: '/Tech/TechHome'
-          })
-        }
-      }).catch((error) => {
-        console.log(error)
       })
+        .then((res) => {
+          this.loading = false
+          if (res.data.statuscode === 200) {
+            this.$store.commit('getUserInfo', this.loginForm.username)
+            this.$store.commit('login', res.data.content.accessToken)
+            this.$router.push({
+              path: '/Tech/TechHome'
+            })
+          }
+        })
+        // .catch((error) => {
+        // console.log(error)
+        // })
     }
   }
 }
 </script>
 
 <style lang="scss">
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
 .login-container {
   min-height: 100%;
   width: 100%;

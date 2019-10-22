@@ -1,10 +1,10 @@
 <template>
     <div class="mainHeaderContainer">
-        <el-row class="main-header">
-            <tag :type='this.type'>人员列表</tag>
-            <tag>考勤管理</tag>
-            <tag>请假管理</tag>
-        </el-row>
+<!--        <el-row class="main-header">-->
+<!--            <tag :type='this.type'>人员列表</tag>-->
+<!--            <tag>考勤管理</tag>-->
+<!--            <tag>请假管理</tag>-->
+<!--        </el-row>-->
         <el-row class="main-container">
             <transition name="fade-transform" mode="out-in">
 <!--                <router-view :key="key"/>-->
@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import Tag from '@/components/public/Tag'
+// import Tag from '@/components/public/Tag'
 export default {
   data () {
     return {
@@ -31,7 +31,7 @@ export default {
     }
   },
   components: {
-    Tag
+    // Tag
   }
 }
 </script>

@@ -1,3 +1,8 @@
 <template>
-  <div>requirementslist</div>
+  <div>requirementsLists</div>
 </template>
+<style></style>
+
+<script>
+
+</script>

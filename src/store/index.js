@@ -7,7 +7,8 @@ export default new Vuex.Store({
   state: {
     user: {},
     token: localStorage.getItem('token') ? localStorage.getItem('token') : '',
-    title: ''
+    title: '',
+    username: ''
   },
   mutations: {
     login (state, data) {
@@ -18,6 +19,9 @@ export default new Vuex.Store({
     logout (state) {
       localStorage.removeItem('token')
       state.token = ''
+    },
+    getUserInfo (state, data) {
+      state.username = data
     }
   }
 })

@@ -1,10 +1,10 @@
 <template>
-  <el-container>
-    <el-header height="40px">
+  <el-container class="layout-container">
+    <el-header>
       <home-header></home-header>
     </el-header>
     <el-container>
-      <el-aside class="no-select">
+      <el-aside class="no-select"  width="200px">
         <home-aside></home-aside>
       </el-aside>
       <el-main>
@@ -35,25 +35,23 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  section.el-container.is-vertical{
-    height: 100%;
-  }
-  .el-header{
-    width: 1920px;
-    color: #fff;
-    background-color: #000;
-    line-height: 40px;
-  }
-  main.el-main{
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-  }
-  .el-aside{
-    background-color: #545c64;
-    width: 180px!important;
-  }
-  main.el-main{
-    min-width: 700px;
+  .layout-container{
+    height:100%;
+    .el-header{
+      width: 100%;
+      color:#fff;
+      background:#000;
+      height: 60px;
+      line-height: 60px;
+      min-width:600px;
+      overflow: hidden;
+    }
+    .el-main{
+      min-width:600px;
+    }
+    .el-aside{
+      background-color: #545c64;
+      height:100%;
+    }
   }
 </style>

@@ -1,30 +1,29 @@
 <template>
-  <el-row>
-    <el-col :span="24">
-      <el-menu
-        default-active="0"
-        class="el-menu-vertical-demo"
-        @open="handleOpen"
-        @close="handleClose"
-        background-color="#545c64"
-        text-color="#fff"
-        active-text-color="#409EFF" >
-        <el-menu-item v-for="(item, i) in menuGroup" :key='i' :index="i.toString()">
-          <router-link :to="item.itemRouter">
-            <i :class="item.itemIcon"></i>
-            <span>{{item.itemName}}</span>
-          </router-link>
-        </el-menu-item>
-      </el-menu>
-    </el-col>
-  </el-row>
+  <div class="aside-container">
+    <el-row>
+      <el-col :span="24">
+        <el-menu
+          default-active="0"
+          class="el-menu-vertical-demo"
+          background-color="#545c64"
+          text-color="#fff"
+          active-text-color="#409EFF" >
+          <el-menu-item v-for="(item, i) in menuGroup" :key='i' :index="i.toString()">
+            <router-link :to="item.itemRouter">
+              <i :class="item.itemIcon"></i>
+              <span>{{item.itemName}}</span>
+            </router-link>
+          </el-menu-item>
+        </el-menu>
+      </el-col>
+    </el-row>
+    </div>
 </template>
 
 <script>
 export default {
   data () {
     return {
-      isRouter: true,
       menuGroup: [
         { itemName: '项目列表', itemRouter: '/Tech/TechHome/ProjectsList', itemIcon: 'el-icon-s-order' },
         { itemName: '需求列表', itemRouter: '/Tech/TechHome/RequirementsList', itemIcon: 'el-icon-s-opportunity' },
@@ -36,35 +35,44 @@ export default {
     }
   },
   methods: {
-    handleOpen (key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose (key, keyPath) {
-      console.log(key, keyPath)
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .el-row{
-    width: 100%;
-  }
-  .el-menu-item {
-    box-sizing: border-box;
-    width: 180px;
-    a{
-      display: inline-block;
-      width: 100%;
-      height: 100%;
-      color:#fff;
-      vertical-align: middle;
+  .aside-container {
+    .user-avatar{
+      margin: 20px 0;
+      text-align: center;
+      color: #fff;
+      h3{
+        margin-bottom: 10px;
+      }
     }
-    &.is-active{
-      background-color:#3F474F!important;
-      color:#409EFF;
-      a{
-        color:#409EFF;
+
+    .el-row {
+      width: 100%;
+    }
+
+    .el-menu-item {
+      box-sizing: border-box;
+      width: 200px;
+
+      a {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        vertical-align: middle;
+      }
+
+      &.is-active {
+        background-color: #3F474F !important;
+        color: #409EFF;
+
+        a {
+          color: #409EFF;
+        }
       }
     }
   }
