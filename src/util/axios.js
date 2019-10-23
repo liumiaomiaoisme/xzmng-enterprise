@@ -8,7 +8,7 @@ axios.defaults.baseURL = 'http://47.100.56.42:8068' // 配置接口地址
 axios.interceptors.request.use((config) => {
   // 在发送请求之前做某件事
   if (localStorage.getItem('token')) {
-    config.headers.token = localStorage.getItem('token')
+    config.headers.Authorization = localStorage.getItem('token')
   }
   if (config.method === 'post') {
     // config.data = qs.stringify(config.data)
