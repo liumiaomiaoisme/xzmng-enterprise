@@ -4,7 +4,7 @@
       <home-header></home-header>
     </el-header>
     <el-container>
-      <el-aside class="no-select"  width="200px">
+      <el-aside class="no-select">
         <home-aside></home-aside>
       </el-aside>
       <el-main>
@@ -43,9 +43,8 @@ export default {
       width: 100%;
       color:#fff;
       background:#000;
-      height: 60px;
-      line-height: 60px;
-      min-width:600px;
+      height: 40px!important;
+      line-height: 40px;
       overflow: hidden;
     }
     .el-main{
@@ -69,6 +68,7 @@ export default {
     .el-aside{
       background-color: #545c64;
       height:100%;
+      width:180px!important;
     }
   }
 </style>

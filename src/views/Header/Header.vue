@@ -1,9 +1,9 @@
 <template>
   <el-row class="header-container">
-    <el-row type="flex" class="row-bg" justify="space-between">
+    <el-row type="flex" class="header-inner" justify="space-between">
       <el-col :span="6"><h3>技术管理系统</h3></el-col>
       <el-col :span="6" class="text-push-right">
-        <el-avatar :size="36" :src="circleUrl"></el-avatar>
+        <el-avatar :size="30" :src="circleUrl"></el-avatar>
         <span class="username">{{this.$store.state.username}}</span>
         <el-dropdown>
           <span class="el-dropdown-link text-lg text-color">
@@ -25,7 +25,9 @@
 
 <style lang="scss">
   .header-container{
+    height: 40px;
     .el-avatar{
+      margin-top: -5px;
       vertical-align: middle;
     }
     .username{
@@ -36,6 +38,10 @@
     .el-icon-arrow-down{
       vertical-align: middle;
       color:#409EFF;
+    }
+    .el-dropdown,
+    .header-inner{
+      height: 40px;
     }
   }
 </style>

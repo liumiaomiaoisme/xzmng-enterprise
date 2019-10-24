@@ -56,7 +56,7 @@ export default {
 
     .el-menu-item {
       box-sizing: border-box;
-      width: 200px;
+      width: 180px;
 
       a {
         display: inline-block;

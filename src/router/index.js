@@ -4,13 +4,13 @@ import store from '@/store/index'
 
 import TechLogin from '@/views/Login/TechLogin'
 import TechHome from '@/views/AppMain/TechHome'
-import ProjectsList from '@/views/AppMain/MainModules/ProjectsList'
-import RequirementsList from '@/views/AppMain/MainModules/RequirementsList'
+import ProjectsList from '@/views/AppMain/MainModules/ProjectList/ProjectsList'
+import RequirementsList from '@/views/AppMain/MainModules/RequirementList/RequirementsList'
 import TeamManagement from '@/views/AppMain/MainModules/TeamManage/TeamManagement'
-import ProductsList from '@/views/AppMain/MainModules/ProductsList'
-import MeetingList from '@/views/AppMain/MainModules/MeetingList'
-import KnowledgeShare from '@/views/AppMain/MainModules/KnowledgeShare'
-import ProjectPhaseList from '@/views/AppMain/MainModules/ProjectPhaseList'
+import ProductsList from '@/views/AppMain/MainModules/ProductList/ProductsList'
+import MeetingList from '@/views/AppMain/MainModules/MeetingList/MeetingList'
+import KnowledgeShare from '@/views/AppMain/MainModules/KnowledgeShare/KnowledgeShare'
+import ProjectPhaseList from '@/views/AppMain/MainModules/ProjectPhaseList/ProjectPhaseList'
 
 Vue.use(Router)
 

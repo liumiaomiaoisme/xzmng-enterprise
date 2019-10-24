@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加技术小组" :visible.sync="ocHandler" class="add-team-container">
+   <el-dialog title="添加技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="closeDialog">
       <el-form :model="form" status-icon :rules="rules" ref="addTeamForm">
         <el-form-item label="组名称" :label-width="formLabelWidth" prop="tecGroupName">
           <el-input v-model="form.tecGroupName" autocomplete="off" placeholder="请输入组名称"></el-input>

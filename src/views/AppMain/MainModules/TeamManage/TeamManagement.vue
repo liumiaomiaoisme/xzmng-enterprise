@@ -44,11 +44,11 @@
           end-placeholder="过期日期结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-button type="primary" size="mini" icon="el-icon-search" @click="searchTeam">查询</el-button>
-      <el-button type="info" size="mini" icon="el-icon-refresh" @click="resetSearch">重置</el-button>
+      <el-button type="primary" size="mini" icon="el-icon-search" @click="searchTeam" plain>查询</el-button>
+      <el-button type="info" size="mini" icon="el-icon-refresh" @click="resetSearch" plain>重置</el-button>
     </el-form>
     <!--  表单  -->
-    <el-button @click="openDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
+    <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
     <el-button @click="deleteMultipleTeam" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
     <el-table
       ref="multipleTable"
@@ -120,10 +120,10 @@
     </el-table>
     <el-pagination
       background
-      layout="prev, pager, next"
+      layout="total, prev, pager, next, jumper"
       :total="totalItem">
     </el-pagination>
-    <add-dialog :handler="addDialogFormVisible" @closeDialog="closeDialog"></add-dialog>
+    <add-dialog :handler="addDialogFormVisible" @closeDialog="closeAddDialog"></add-dialog>
     <edit-dialog :handler="editDialogFormVisible" :form="form" @closeDialog="closeEditDialog"></edit-dialog>
   </div>
 </template>
@@ -243,9 +243,10 @@ export default {
           }
         })
     },
+    // 重置表单方法
     resetSearch () {
       this.getTeamList()
-      // this.$refs['searchTeamForm'].resetFields()
+      // this.$refs['searchTeamForm'].resetFields()  这个方法会报错 用不了
       this.searchForm = {
         tecGroupName: '',
         tecGroupType: '',
@@ -261,10 +262,10 @@ export default {
         expiredEndDate: ''
       }
     },
-    openDialog () {
+    openAddDialog () {
       this.addDialogFormVisible = true
     },
-    closeDialog () {
+    closeAddDialog () {
       this.addDialogFormVisible = false
     },
     getAllMenber () {
@@ -315,7 +316,6 @@ export default {
                 typeId = i.groupTypeId
               }
             }
-            console.log(typeId)
             this.form = {
               tecGroupName: editForm.tecGroupName,
               tecGroupImg: editForm.tecGroupImg,
@@ -327,7 +327,6 @@ export default {
               tecGroupExpiredDate: new Date(editForm.tecGroupExpiredDate),
               tecGroupId: editForm.tecGroupId
             }
-            console.log(this.groupType)
           }
         })
       this.editDialogFormVisible = true
@@ -375,13 +374,6 @@ export default {
             this.totalItem = res.data.content.totalCount
           }
         })
-    },
-    getFormatDate (timestr) {
-      let newTime = new Date(timestr)
-      let y = newTime.getFullYear()
-      let mo = (newTime.getMonth() + 1).toString().padStart(2, '0')
-      let d = newTime.getDate().toString().padStart(2, '0')
-      return `${y}-${mo}-${d}`
     },
     getFormatTime (timestr) {
       let newTime = new Date(timestr)
