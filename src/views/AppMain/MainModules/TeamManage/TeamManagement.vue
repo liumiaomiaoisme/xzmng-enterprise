@@ -1,7 +1,7 @@
 <template>
   <div class="team-menagement-container">
     <!--  表单查询  -->
-    <el-form :model="searchForm" class="search-container" size="mini" ref="searchTeamForm">
+    <el-form :model="searchForm" class="search-container" size="mini" ref="searchFormA">
       <el-form-item>
         <el-input v-model="searchForm.tecGroupName" prefix-icon="el-icon-search" placeholder="请输入组名"></el-input>
       </el-form-item>
@@ -45,7 +45,7 @@
         </el-date-picker>
       </el-form-item>
       <el-button type="primary" size="mini" icon="el-icon-search" @click="searchTeam" plain>查询</el-button>
-      <el-button type="info" size="mini" icon="el-icon-refresh" @click="resetSearch" plain>重置</el-button>
+      <el-button type="info" size="mini" icon="el-icon-refresh" plain @click="resetSearch('searchFormA')">重置</el-button>
     </el-form>
     <!--  表单  -->
     <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
@@ -246,7 +246,8 @@ export default {
     // 重置表单方法
     resetSearch () {
       this.getTeamList()
-      // this.$refs['searchTeamForm'].resetFields()  这个方法会报错 用不了
+      // 这个方法会报错 用不了
+      // this.$refs[].resetFields()
       this.searchForm = {
         tecGroupName: '',
         tecGroupType: '',

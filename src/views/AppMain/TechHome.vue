@@ -48,7 +48,7 @@ export default {
       overflow: hidden;
     }
     .el-main{
-      overflow: hidden;
+      overflow-x: hidden;
       .fade-transform-leave-active,
       .fade-transform-enter-active {
         transition: all .5s;
