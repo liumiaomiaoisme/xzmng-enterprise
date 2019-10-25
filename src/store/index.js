@@ -19,7 +19,8 @@ export default new Vuex.Store({
     editDialogVisible: false,
     staffList: [],
     groupType: [],
-    projectStageType: []
+    projectStageType: [],
+    editProjectFormData: {}
   },
   mutations: {
     login (state, data) {
@@ -115,13 +116,91 @@ export default new Vuex.Store({
           console.log(err)
         })
     },
+    deleteProject (state, data) {
+      axios.fetchPost('/api/project/delete/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            this.commit('getProjectList', {
+              currentPage: 1
+            })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    deleteMultipleProject (state, data) {
+      console.log(data)
+      axios.fetchPost('api/project/batchDelete/', {
+        ids: data
+      })
+        .then(res => {
+          console.log(res)
+          if (res.data.statuscode === 200) {
+            this.commit('getProjectList', {
+              currentPage: 1
+            })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 项目列表弹框
     openAddDialog (state) {
-      console.log(1)
       state.addDialogVisible = true
     },
     closeAddDialog (state) {
       state.addDialogVisible = false
+    },
+    openEditDialog (state, data) {
+      axios.fetchGet('/api/project/list/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            let tmpForm = res.data.content[0]
+            console.log(tmpForm.tecProjectPrincipal)
+            if (tmpForm.tecProjectPrincipal) {
+              tmpForm.tecProjectPrincipal = parseInt(tmpForm.tecProjectPrincipal)
+            }
+            if (tmpForm.empId) {
+              tmpForm.empId = tmpForm.empId.split(',').map(Number)
+            }
+            if (tmpForm.stageType) {
+              for (let i of state.projectStageType) {
+                if (i.stageType === tmpForm.stageType) {
+                  tmpForm.tecProjectStage = i.id
+                }
+              }
+            }
+            if (tmpForm.tecProjectStatus) {
+              switch (tmpForm.tecProjectStatus) {
+                case 0:
+                  tmpForm.tecProjectStatus = '未开始'
+                  break
+                case 1:
+                  tmpForm.tecProjectStatus = '进行中'
+                  break
+                case 2:
+                  tmpForm.tecProjectStatus = '已结束'
+                  break
+              }
+            }
+            if (tmpForm.tecProjectStartDate) {
+              tmpForm.tecProjectStartDate = new Date(tmpForm.tecProjectStartDate)
+            }
+            if (tmpForm.tecProjectPublishDate) {
+              tmpForm.tecProjectPublishDate = new Date(tmpForm.tecProjectPublishDate)
+            }
+            if (tmpForm.tecProjectEstimatedEndDate) {
+              tmpForm.tecProjectEstimatedEndDate = new Date(tmpForm.tecProjectEstimatedEndDate)
+            }
+            state.editProjectFormData = tmpForm
+            state.editDialogVisible = true
+          }
+        })
+    },
+    closeEditDialog (state) {
+      state.editDialogVisible = false
     }
   }
 })

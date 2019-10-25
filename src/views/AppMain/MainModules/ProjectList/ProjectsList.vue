@@ -29,28 +29,33 @@
     </el-form>
     <!-- 项目列表   -->
     <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-    <el-button @click="deleteMultipleTeam" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
+    <el-button @click="deleteMultipleProject" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
     <el-table ref="multipleTable"  :data="this.$store.state.projectListTableData"
               stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="tecProjectName" label="项目名称" fixed></el-table-column>
       <el-table-column prop="tecProjectDesc" label="项目简要">
         <template slot-scope="scope">
-          <el-popover placement="top-start" title="项目简要" width="200" trigger="hover"
-          :content="scope.row.tecProjectDesc">
-          <el-button slot="reference" class="tips-btn">查看简要</el-button>
-        </el-popover>
+          <el-popover placement="top-start" title="项目简要" width="200" trigger="hover" :content="scope.row.tecProjectDesc">
+            <el-button slot="reference" class="tips-btn">查看简要</el-button>
+          </el-popover>
         </template>
       </el-table-column>
       <el-table-column prop="TecProjectPrincipalName" label="负责人"></el-table-column>
       <el-table-column prop="tecProjectStatus" label="项目状态"></el-table-column>
-      <el-table-column prop="tecProjectLogourl" label="项目logo" width="80" class="logo-item">
+      <el-table-column prop="tecProjectLogourl" label="项目logo" width="82" class="logo-item">
         <template slot-scope="scope">
            <img :src="scope.row.tecProjectLogourl" class="team-avatar"/>
         </template>
       </el-table-column>
       <el-table-column prop="tecProjectCycle" label="项目周期"></el-table-column>
-      <el-table-column prop="members" label="项目成员"></el-table-column>
+      <el-table-column prop="members" label="项目成员">
+        <template slot-scope="scope">
+          <el-popover placement="top-start" title="项目成员" width="200" trigger="hover" :content="scope.row.members">
+            <el-button slot="reference" class="tips-btn">查看成员</el-button>
+          </el-popover>
+        </template>
+      </el-table-column>
       <el-table-column prop="tecProjectStartDate" label="开始时间" >
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupCreateDate"></span>
@@ -73,7 +78,7 @@
       <el-table-column fixed="right" label="操作" width="96">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditDialog(scope.row.tecProjectId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteTeam(scope.row.tecProjectId)"></el-button>
+          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteProject(scope.row.tecProjectId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -83,14 +88,14 @@
       :total="this.$store.state.projectListTotalCount"
       @next-click="getNextPage" @prev-click="getPrevPage" @current-change="getCurrentPage">
     </el-pagination>
-    <add-dialog @click="openAddDialog"></add-dialog>
-<!--    <edit-dialog :handler="editDialogFormVisible"></edit-dialog>-->
+    <add-dialog></add-dialog>
+    <edit-dialog></edit-dialog>
   </div>
 </template>
 
 <script>
 import addDialog from '@/views/AppMain/MainModules/ProjectList/component/addProject.vue'
-// import editDialog from '@/views/AppMain/MainModules/ProjectList/component/editProject.vue'
+import editDialog from '@/views/AppMain/MainModules/ProjectList/component/editProject.vue'
 export default {
   data () {
     return {
@@ -110,11 +115,25 @@ export default {
     openAddDialog () {
       this.$store.commit('openAddDialog')
     },
+    openEditDialog (id) {
+      this.$store.commit('openEditDialog', id)
+    },
     deleteMultipleTeam () {
       console.log(1)
     },
+    deleteProject (id) {
+      this.$store.commit('deleteProject', id)
+    },
     handleSelectionChange (val) {
       this.multipleSelection = val
+    },
+    deleteMultipleProject () {
+      let idsArr = []
+      for (let item of this.multipleSelection) {
+        idsArr.push(item.tecProjectId)
+      }
+      let ids = idsArr.toString()
+      this.$store.commit('deleteMultipleProject', ids)
     },
     getNextPage () {
       this.$store.commit('getProjectList', {
@@ -169,8 +188,8 @@ export default {
     }
   },
   components: {
-    'add-dialog': addDialog
-    // 'edit-dialog': editDialog
+    'add-dialog': addDialog,
+    'edit-dialog': editDialog
   }
 }
 </script>
@@ -179,6 +198,10 @@ export default {
     position: relative;
     .el-table{
       margin-top: 10px;
+    }
+    .el-table th>.cell{
+      white-space:pre-line;
+      word-wrap: break-word;
     }
     .team-avatar{
       width:50px;
