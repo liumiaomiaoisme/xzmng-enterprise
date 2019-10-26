@@ -83,9 +83,9 @@
       </el-table-column>
     </el-table>
     <el-pagination
-      background :page-size="this.$store.state.projectListPageSize"
+      background :page-size="this.$store.state.productListPageSize"
       layout="total, prev, pager, next, jumper"
-      :total="this.$store.state.projectListTotalCount"
+      :total="this.$store.state.productListTotalCount"
       @next-click="getNextPage" @prev-click="getPrevPage" @current-change="getCurrentPage">
     </el-pagination>
     <add-dialog></add-dialog>

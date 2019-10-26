@@ -27,9 +27,6 @@ export default {
       plain: 'plain'
     }
   },
-  methods: {
-
-  },
   components: {
     HomeAside,
     HomeHeader
