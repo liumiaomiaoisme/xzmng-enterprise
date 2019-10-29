@@ -1,7 +1,7 @@
 import axios from 'axios'
 // import qs from 'qs'
 
-axios.defaults.timeout = 5000 // 响应时间
+axios.defaults.timeout = 10000 // 响应时间
 axios.defaults.baseURL = 'http://47.100.56.42:8068' // 配置接口地址
 
 // POST传参序列化(添加请求拦截器)

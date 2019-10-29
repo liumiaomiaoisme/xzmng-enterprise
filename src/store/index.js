@@ -17,6 +17,7 @@ export default new Vuex.Store({
     // 项目列表弹框
     addDialogVisible: false,
     editDialogVisible: false,
+    // 技术部员工列表
     staffList: [],
     groupType: [],
     projectStageType: [],
@@ -33,10 +34,262 @@ export default new Vuex.Store({
     // 产品审核人
     ProductReviewerList: [],
     ProductTypeList: [],
-    editProductForm: {}
-
+    editProductForm: {},
+    // 知识分享
+    addShareVisible: false,
+    editShareVisible: false,
+    shareListData: [],
+    shareTypeDate: [],
+    editShareForm: {},
+    shareListTotalCount: 0,
+    shareListPageSize: 10,
+    // 项目阶段
+    projectPhaseList: [],
+    projectPhaseListPageSize: 10,
+    projectPhaseListTotalCount: 0,
+    addProjectPhaseVisible: false,
+    editProjectPhaseVisible: false,
+    editProjectPhaseForm: {},
+    // 项目阶段项目列表
+    projectsList: []
   },
   mutations: {
+    // 项目阶段
+    deleteMultipleProjectPhase (state, data) {
+      axios.fetchPost('/api/stage/batchDelete', {
+        ids: data
+      })
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            this.commit('getProjectPhaseList', {
+              currentPage: 1
+            })
+          }
+        })
+    },
+    deleteProjectPhase (state, data) {
+      axios.fetchPost('/api/stage/delete/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            this.commit('getProjectPhaseList', {
+              currentPage: 1
+            })
+          }
+        })
+    },
+    getProjectsList (state) {
+      axios.fetchGet('/api/stage/projects')
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.projectsList = res.data.content
+          }
+        })
+    },
+    openAddProjectPhase (state) {
+      state.addProjectPhaseVisible = true
+    },
+    closeAddProjectPhase (state) {
+      state.addProjectPhaseVisible = false
+    },
+    openEditProjectPhase (state, data) {
+      this.commit('getProjectsList')
+      axios.fetchGet('/api/stage/list/' + data)
+        .then(res => {
+          state.editProjectPhaseForm = res.data.content[0]
+          if (state.editProjectPhaseForm.tecStageReceiveDate) {
+            this.commit('getFormatTime', state.editProjectPhaseForm.tecStageReceiveDate)
+            state.editProjectPhaseForm.tecStageReceiveDate = state.dateTmp
+          }
+        })
+      state.editProjectPhaseVisible = true
+    },
+    closeEditProjectPhase (state) {
+      state.editProjectPhaseVisible = false
+    },
+    getProjectPhaseList (state, data) {
+      state.loading = true
+      axios.fetchGet('/api/stage/lists', {
+        currentPage: data.currentPage,
+        PageSize: state.projectPhaseListPageSize
+      })
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.projectPhaseList = res.data.content.list
+            for (let i of state.projectPhaseList) {
+              if (i.tecStageReceiveDate) {
+                this.commit('getFormatTime', i.tecStageReceiveDate)
+                i.tecStageReceiveDate = state.dateTmp
+              }
+              if (i.tecProjectEstimatedEnd) {
+                this.commit('getFormatTime', i.tecProjectEstimatedEnd)
+                i.tecProjectEstimatedEnd = state.dateTmp
+              }
+              if (i.tecStageStatus !== undefined) {
+                if (i.tecStageStatus === 0) {
+                  i.tecStageStatus = '未完成'
+                } else if (i.tecStageStatus === 1) {
+                  i.tecStageStatus = '进行中'
+                } else if (i.tecStageStatus === 2) {
+                  i.tecStageStatus = '已完成'
+                }
+              }
+              if (i.tecStageTestStatus !== undefined) {
+                if (i.tecStageTestStatus === 0) {
+                  i.tecStageTestStatus = '未通过'
+                } else if (i.tecStageTestStatus === 1) {
+                  i.tecStageTestStatus = '通过'
+                } else if (i.tecStageTestStatus === 2) {
+                  i.tecStageTestStatus = '有bug'
+                }
+              }
+            }
+            state.loading = false
+            state.projectPhaseListTotalCount = res.data.content.totalCount
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    searchProjectPhase (state, data) {
+      data.currentPage = 1
+      data.pageSize = state.projectPhaseListPageSize
+      state.editShareVisible = true
+      axios.fetchGet('/api/stage/lists', data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.projectPhaseList = res.data.content.list
+            for (let i of state.projectPhaseList) {
+              if (i.tecStageReceiveDate) {
+                this.commit('getFormatTime', i.tecStageReceiveDate)
+                i.tecStageReceiveDate = state.dateTmp
+              }
+              if (i.tecProjectEstimatedEnd) {
+                this.commit('getFormatTime', i.tecProjectEstimatedEnd)
+                i.tecProjectEstimatedEnd = state.dateTmp
+              }
+              if (i.tecStageStatus !== undefined) {
+                if (i.tecStageStatus === 0) {
+                  i.tecStageStatus = '未完成'
+                } else if (i.tecStageStatus === 1) {
+                  i.tecStageStatus = '进行中'
+                } else if (i.tecStageStatus === 2) {
+                  i.tecStageStatus = '已完成'
+                }
+              }
+              if (i.tecStageTestStatus !== undefined) {
+                if (i.tecStageTestStatus === 0) {
+                  i.tecStageTestStatus = '未通过'
+                } else if (i.tecStageTestStatus === 1) {
+                  i.tecStageTestStatus = '通过'
+                } else if (i.tecStageTestStatus === 2) {
+                  i.tecStageTestStatus = '有bug'
+                }
+              }
+            }
+            state.loading = false
+            state.projectPhaseListTotalCount = res.data.content.totalCount
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    // 搜索起止时间格式化
+    dateKeyClear (state, data) {
+      if (data.mDate) {
+        console.log(data.mDate)
+        data.sDateStart = data.mDate[0]
+        data.sDateEnd = data.mDate[1]
+        delete data.mDate
+        console.log(data.mDate)
+      } else {
+        delete data.sDateStart
+        delete data.sDateEnd
+      }
+    },
+    // 知识分享
+    openEditShare (state, data) {
+      state.editShareVisible = true
+      axios.fetchGet('/api/share/list/' + data)
+        .then(res => {
+          console.log(res)
+          state.editShareForm = res.data.content[0]
+        })
+    },
+    closeEditShare (state) {
+      state.editShareVisible = false
+    },
+    openAddShare (state) {
+      state.addShareVisible = true
+    },
+    closeAddShare (state) {
+      state.addShareVisible = false
+    },
+    getShareList (state, data) {
+      state.loading = true
+      axios.fetchGet('/api/share/lists', {
+        currentPage: data.currentPage,
+        pageSize: state.shareListPageSize
+      })
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.shareListData = res.data.content.list
+            for (let i of state.shareListData) {
+              if (i.tecShareCreateDate) {
+                this.commit('getFormatTime', i.tecShareCreateDate)
+                i.tecShareCreateDate = state.dateTmp
+              }
+              if (i.tecShareStatus === 0) {
+                i.tecShareStatus = '草稿'
+              } else {
+                i.tecShareStatus = '发布'
+              }
+            }
+            state.loading = false
+            state.shareListTotalCount = res.data.content.totalCount
+          }
+        })
+    },
+    searchShare (state, data) {
+      axios.fetchGet('/api/share/lists', data)
+        .then(res => {
+          console.log(res)
+          if (res.data.statuscode === 200) {
+            state.shareListData = res.data.content.list
+            for (let i of state.shareListData) {
+              if (i.tecShareCreateDate) {
+                this.commit('getFormatTime', i.tecShareCreateDate)
+                i.tecShareCreateDate = state.dateTmp
+              }
+              if (i.tecShareStatus === 0) {
+                i.tecShareStatus = '草稿'
+              } else {
+                i.tecShareStatus = '发布'
+              }
+            }
+          }
+        })
+    },
+    deleteShare (state, data) {
+      axios.fetchPost('/api/share/delete/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            this.commit('getShareList', {
+              currentPage: data.currentPage
+            })
+          }
+        })
+    },
+    getShareType (state) {
+      axios.fetchGet('/api/share/types')
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.shareTypeDate = res.data.content
+          }
+        })
+    },
+    // 登录token
     login (state, data) {
       localStorage.setItem('token', data)
       state.token = data
@@ -145,7 +398,6 @@ export default new Vuex.Store({
         })
     },
     deleteMultipleProject (state, data) {
-      console.log(data)
       axios.fetchPost('api/project/batchDelete/', {
         ids: data
       })
@@ -173,7 +425,6 @@ export default new Vuex.Store({
         .then(res => {
           if (res.data.statuscode === 200) {
             let tmpForm = res.data.content[0]
-            console.log(tmpForm)
             if (tmpForm.tecProjectPrincipal) {
               tmpForm.tecProjectPrincipal = parseInt(tmpForm.tecProjectPrincipal)
             }
@@ -228,6 +479,19 @@ export default new Vuex.Store({
           if (res.data.statuscode === 200) {
             state.productListTableData = res.data.content.list
             for (let i of state.productListTableData) {
+              if (i.tecProductCheckType !== 'undefined') {
+                switch (i.tecProductCheckType) {
+                  case 0:
+                    i.tecProductCheckType = '未审核'
+                    break
+                  case 1:
+                    i.tecProductCheckType = '已审核'
+                    break
+                  case 2:
+                    i.tecProductCheckType = '驳回'
+                    break
+                }
+              }
               if (i.tecProductCreateDate) {
                 this.commit('getFormatTime', i.tecProductCreateDate)
                 i.tecProductCreateDate = state.dateTmp
@@ -267,7 +531,7 @@ export default new Vuex.Store({
           }
         })
     },
-    // 项目列表弹框
+    // 产品列表弹框
     openAddProduct (state) {
       Promise.all([this.commit('getAllMember'), this.commit('getReviewer'), this.commit('getProductType')])
         .then(res => {
@@ -317,6 +581,53 @@ export default new Vuex.Store({
               currentPage: 1
             })
           }
+        })
+    },
+    searchProduct (state, data) {
+      data.currentPage = 1
+      data.pageSize = state.productListPageSize
+      state.loading = true
+      axios.fetchGet('/api/product/lists', data)
+        .then(res => {
+          if (res.data.statuscode === 400 && res.data.msg === '没有任何产品的信息，请稍后重试') {
+            state.productListTableData = []
+          }
+          if (res.data.statuscode === 200) {
+            state.productListTableData = res.data.content.list
+            for (let i of state.productListTableData) {
+              if (i.tecProductCheckType !== 'undefined') {
+                switch (i.tecProductCheckType) {
+                  case 0:
+                    console.log(i.tecProductCheckType)
+                    i.tecProductCheckType = '未审核'
+                    break
+                  case 1:
+                    i.tecProductCheckType = '已审核'
+                    break
+                  case 2:
+                    i.tecProductCheckType = '驳回'
+                    break
+                }
+              }
+              if (i.tecProductCreateDate) {
+                this.commit('getFormatTime', i.tecProductCreateDate)
+                i.tecProductCreateDate = state.dateTmp
+              }
+              if (i.tecProductCheckDate) {
+                this.commit('getFormatTime', i.tecProductCheckDate)
+                i.tecProductCheckDate = state.dateTmp
+              }
+              if (i.tecProductPublishDate) {
+                this.commit('getFormatTime', i.tecProductPublishDate)
+                i.tecProductPublishDate = state.dateTmp
+              }
+            }
+          }
+          state.loading = false
+          state.productListTotalCount = res.data.content.totalCount
+        })
+        .catch(err => {
+          console.log(err)
         })
     }
   }

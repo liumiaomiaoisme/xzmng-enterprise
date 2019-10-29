@@ -8,31 +8,36 @@
       <el-form-item prop="principalName">
         <el-input  v-model="productSearchForm.principalName" prefix-icon="el-icon-search" placeholder="请输入产品负责人"></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="tecProductType">
         <el-select placeholder="请选择产品类型" v-model="productSearchForm.tecProductType" clearable>
           <el-option :label="item.productTypeName" :value="item.productId" v-for="item in this.$store.state.ProductTypeList" :key="item.productId"></el-option>
         </el-select>
       </el-form-item>
+      <el-form-item prop="checkName">
+        <el-input  v-model="productSearchForm.checkName" prefix-icon="el-icon-search" placeholder="请输入测试人"></el-input>
+      </el-form-item>
+      <el-form-item  prop="tecProductCheckType">
+        <el-select placeholder="请选择审核状态" v-model="productSearchForm.tecProductCheckType" clearable>
+          <el-option :label="item.typeName" :value="item.typeNumb" v-for="item in ProductCheckType" :key="item.typeNumb"></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item class="date-form" prop="createDate">
         <el-date-picker
-          v-model="productSearchForm.createDate" type="daterange" range-separator="至" start-placeholder="产品创建日期范围起" end-placeholder="产品创建日期范围止">
+          v-model="productSearchForm.createDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="产品创建日期范围起" end-placeholder="产品创建日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-form-item class="date-form" prop="publishDate">
         <el-date-picker
-          v-model="productSearchForm.publishDate" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
+          v-model="productSearchForm.publishDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
         </el-date-picker>
       </el-form-item>
-      <el-button type="primary" size="mini" icon="el-icon-search" @click="searchProject" plain>查询</el-button>
-      <el-button type="info" size="mini" icon="el-icon-refresh" plain @click="resetSearch('projectSearchForm')">重置</el-button>
+      <el-button type="primary" size="mini" icon="el-icon-search" @click="searchProduct" plain>查询</el-button>
+      <el-button type="info" size="mini" icon="el-icon-refresh" plain @click="resetSearch('productSearchForm')">重置</el-button>
     </el-form>
 
     <!-- product-table-->
     <el-button @click="openAddProductDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-<!--    <el-button @click="deleteMultipleProject" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>-->
-    <el-table ref="multipleTable"  :data="this.$store.state.productListTableData"
-              stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
-      <el-table-column type="selection" width="55"></el-table-column>
+    <el-table ref="multipleTable" :data="this.$store.state.productListTableData" stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
       <el-table-column prop="tecProductName" label="产品名称" fixed width="120"></el-table-column>
       <el-table-column prop="tecProductDesc" label="产品简要">
         <template slot-scope="scope">
@@ -41,19 +46,19 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column prop="empName" label="产品负责人"></el-table-column>
+      <el-table-column prop="empName" label="产品负责人" width="96" ></el-table-column>
       <el-table-column prop="tecProductType" label="产品类型"></el-table-column>
-      <el-table-column prop="tecProductCreateDate" label="产品创建时间" width="100" >
+      <el-table-column prop="tecProductCreateDate" label="产品创建时间" width="106" >
         <template slot-scope="scope">
            <span v-html="scope.row.tecProductCreateDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProductCheckDate" label="产品审核时间" width="100">
+      <el-table-column prop="tecProductCheckDate" label="产品审核时间" width="106">
         <template slot-scope="scope">
            <span v-html="scope.row.tecProductCheckDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="productCheckName" label="产品审核人"></el-table-column>
+      <el-table-column prop="productCheckName" label="产品审核人" width="96"></el-table-column>
       <el-table-column prop="tecProductAuditmind" label="产品审核意见">
         <template slot-scope="scope">
           <el-popover placement="top-start" title="产品审核意见" width="200" trigger="hover" :content="scope.row.tecProductAuditmind">
@@ -63,7 +68,7 @@
       </el-table-column>
       <el-table-column prop="tecProductCheckType" label="产品审核状态"></el-table-column>
       <el-table-column prop="tecProductCompleteDays" label="产品预计完成天数"></el-table-column>
-      <el-table-column prop="ui" label="产品UI参与人">
+      <el-table-column prop="ui" label="产品UI 参与人">
         <template slot-scope="scope">
           <el-popover placement="top-start" title="产品UI参与人" width="200" trigger="hover" :content="scope.row.ui">
             <el-button slot="reference" class="tips-btn">查看UI</el-button>
@@ -84,7 +89,7 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProductPublishDate" label="产品预计上线时间" width="100">
+      <el-table-column prop="tecProductPublishDate" label="产品预计上线时间" width="106">
         <template slot-scope="scope">
            <span v-html="scope.row.tecProductPublishDate"></span>
         </template>
@@ -126,7 +131,17 @@ export default {
     return {
       currentPage: 1,
       multipleSelection: [],
-      productSearchForm: {}
+      productSearchForm: {},
+      ProductCheckType: [{
+        typeNumb: 0,
+        typeName: '未审核'
+      }, {
+        typeNumb: 1,
+        typeName: '已审核'
+      }, {
+        typeNumb: 2,
+        typeName: '驳回'
+      }]
     }
   },
   created () {
@@ -163,6 +178,26 @@ export default {
       this.$store.commit('getProductList', {
         currentPage: this.currentPage
       })
+    },
+    searchProduct () {
+      let searchForm = { ...this.productSearchForm }
+      if (searchForm.createDate) {
+        searchForm.createDateStart = searchForm.createDate[0]
+        searchForm.createDateEnd = searchForm.createDate[1]
+        delete searchForm.createDate
+      }
+      if (searchForm.publishDate) {
+        searchForm.publishDateStart = searchForm.publishDate[0]
+        searchForm.publishDateEnd = searchForm.publishDate[1]
+        delete searchForm.publishDate
+      }
+      this.$store.commit('searchProduct', searchForm)
+    },
+    resetSearch (formName) {
+      this.$store.commit('getProductList', {
+        currentPage: 1
+      })
+      this.$refs[formName].resetFields()
     }
   },
   components: {

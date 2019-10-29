@@ -86,7 +86,9 @@ export default {
   data () {
     return {
       autosize: false,
-      addProductForm: {},
+      addProductForm: {
+        tecProductAnnex: ''
+      },
       relativePath: '',
       formLabelWidth: '126px',
       rules: {

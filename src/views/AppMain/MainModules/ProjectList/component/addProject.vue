@@ -45,7 +45,8 @@
           <el-date-picker
             v-model="addProjectForm.tecProjectEstimatedEndDate"
             type="date"
-            placeholder="选择项目预完成日期">
+            placeholder="选择项目预完成日期"
+            :picker-options="EstimatedEndDate">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="项目状态" :label-width="formLabelWidth" prop="tecProjectStatus">
@@ -67,7 +68,8 @@
           <el-date-picker
             v-model="addProjectForm.tecProjectPublishDate"
             type="date"
-            placeholder="选择项目发布日期">
+            placeholder="选择项目发布日期"
+            :picker-options="PublishDate">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="预计承载量" :label-width="formLabelWidth" prop="tecProjectCapacity">
@@ -86,7 +88,9 @@ export default {
   data () {
     return {
       autosize: false,
-      addProjectForm: {},
+      addProjectForm: {
+        tecProjectLogourl: ''
+      },
       relativePath: '',
       formLabelWidth: '126px',
       staffList: [],
@@ -136,6 +140,22 @@ export default {
   created () {
     this.$store.commit('getAllMember')
     this.$store.commit('getProjectStageType')
+  },
+  computed: {
+    EstimatedEndDate () {
+      return {
+        disabledDate: (time) => {
+          return time.getTime() < new Date(this.addProjectForm.tecProjectStartDate).getTime()
+        }
+      }
+    },
+    PublishDate () {
+      return {
+        disabledDate: (time) => {
+          return time.getTime() < new Date(this.addProjectForm.tecProjectEstimatedEndDate).getTime()
+        }
+      }
+    }
   },
   methods: {
     closeDialog () {

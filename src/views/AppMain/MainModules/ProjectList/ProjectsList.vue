@@ -30,7 +30,7 @@
     <!-- 项目列表   -->
     <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
     <el-button @click="deleteMultipleProject" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
-    <el-table ref="multipleTable"  :data="this.$store.state.projectListTableData"
+    <el-table ref="multipleTable" :data="this.$store.state.projectListTableData"
               stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="tecProjectName" label="项目名称" fixed></el-table-column>
@@ -56,25 +56,25 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProjectStartDate" label="开始时间" >
+      <el-table-column prop="tecProjectStartDate" label="开始时间"  width="100">
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupCreateDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProjectEstimatedEndDate" label="预结束时间">
+      <el-table-column prop="tecProjectEstimatedEndDate" label="预结束时间" width="100">
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupExpiredDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="stageType" label="目前开发阶段"></el-table-column>
-      <el-table-column prop="tecProjectVersion" label="目前开发版本"></el-table-column>
-      <el-table-column prop="tecProjectCommitCount" label="提交次数统计"></el-table-column>
-      <el-table-column prop="tecProjectPublishDate" label="预计上线日期" >
+      <el-table-column prop="stageType" label="目前开发阶段" width="106"></el-table-column>
+      <el-table-column prop="tecProjectVersion" label="目前开发版本" width="106"></el-table-column>
+      <el-table-column prop="tecProjectCommitCount" label="提交次数统计" width="106"></el-table-column>
+      <el-table-column prop="tecProjectPublishDate" label="预计上线日期" width="106">
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupCreateDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProjectCapacity" label="预计承载量"></el-table-column>
+      <el-table-column prop="tecProjectCapacity" label="预计承载量" width="100"></el-table-column>
       <el-table-column fixed="right" label="操作" width="96">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditDialog(scope.row.tecProjectId)"></el-button>
