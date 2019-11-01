@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="编辑项目阶段" :visible.sync="this.$store.state.editProjectPhaseVisible" class="projectPhase-dialog-container" :before-close="closeDialog">
+   <el-dialog title="编辑项目阶段" :visible.sync="this.$store.state.editProjectPhaseVisible" class="projectPhase-dialog-container" :before-close="maskFake">
      <el-form :model="addProjectPhaseForm" status-icon ref="addProjectPhaseForm" :rules="rules">
         <el-form-item label="项目名称" :label-width="formLabelWidth" prop="tecProjectName">
           <el-select v-model="addProjectPhaseForm.tecProjectName" placeholder="请选择项目名称">
@@ -76,6 +76,7 @@ export default {
     }
   },
   methods: {
+    maskFake () {},
     closeDialog () {
       this.$store.commit('closeEditProjectPhase')
       this.$refs['addProjectPhaseForm'].resetFields()

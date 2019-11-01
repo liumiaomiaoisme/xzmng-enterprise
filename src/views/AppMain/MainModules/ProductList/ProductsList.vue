@@ -37,8 +37,8 @@
 
     <!-- product-table-->
     <el-button @click="openAddProductDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-    <el-table ref="multipleTable" :data="this.$store.state.productListTableData" stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
-      <el-table-column prop="tecProductName" label="产品名称" fixed width="120"></el-table-column>
+    <el-table :data="this.$store.state.productListTableData" stripe border fit v-loading="this.$store.state.loading">
+      <el-table-column prop="tecProductName" label="产品名称" fixed width="160"></el-table-column>
       <el-table-column prop="tecProductDesc" label="产品简要">
         <template slot-scope="scope">
           <el-popover placement="top-start" title="产品简要" width="200" trigger="hover" :content="scope.row.tecProductDesc">
@@ -47,7 +47,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="empName" label="产品负责人" width="96" ></el-table-column>
-      <el-table-column prop="tecProductType" label="产品类型"></el-table-column>
+      <el-table-column prop="productTypeName" label="产品类型"></el-table-column>
       <el-table-column prop="tecProductCreateDate" label="产品创建时间" width="106" >
         <template slot-scope="scope">
            <span v-html="scope.row.tecProductCreateDate"></span>
@@ -159,9 +159,6 @@ export default {
     },
     deleteProject (id) {
       this.$store.commit('deleteProduct', id)
-    },
-    handleSelectionChange (val) {
-      this.multipleSelection = val
     },
     getNextPage () {
       this.$store.commit('getProductList', {

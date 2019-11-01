@@ -29,7 +29,9 @@
     <el-table :data="this.$store.state.shareListData" stripe border fit v-loading="this.$store.state.loading">
       <el-table-column type="expand" label="详情" width="60">
         <template slot-scope="props">
-          <div v-html='props.row.tecShareContent'></div>
+          <div class="ql-container ql-snow">
+              <div class="ql-editor" v-html='props.row.tecShareContent'></div>
+          </div>
         </template>
       </el-table-column>
       <el-table-column prop="tecShareTitle" label="分享的标题"></el-table-column>
@@ -58,6 +60,9 @@
 </template>
 
 <script>
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 import AddShare from '@/views/AppMain/MainModules/KnowledgeShare/component/addShare.vue'
 import EditShare from '@/views/AppMain/MainModules/KnowledgeShare/component/editShare.vue'
 export default {

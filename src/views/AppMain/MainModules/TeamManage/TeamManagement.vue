@@ -1,32 +1,31 @@
 <template>
   <div class="team-menagement-container">
     <!--  表单查询  -->
-    <el-form :model="searchForm" class="search-container" size="mini" ref="searchFormA">
-      <el-form-item>
+    <el-form :model="searchForm" class="search-container" size="mini" ref="searchForm">
+      <el-form-item prop="tecGroupName">
         <el-input v-model="searchForm.tecGroupName" prefix-icon="el-icon-search" placeholder="请输入组名"></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="tecGroupType">
         <el-select placeholder="请选择组类型" v-model="searchForm.tecGroupType" clearable>
           <el-option :label="item.groupTypeName" :value="item.groupTypeId" v-for="item in groupType" :key="item.groupTypeId"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="tecGroupLevel">
         <el-select v-model="searchForm.tecGroupLevel" placeholder="请选择组等级" clearable>
           <el-option label="非正式组" value="0"></el-option>
           <el-option label="正式组" value="1"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="tecGroupLeaderName">
         <el-input  v-model="searchForm.tecGroupLeaderName" prefix-icon="el-icon-search" placeholder="请输入组长"></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="tecGroupDeputyName">
         <el-input  v-model="searchForm.tecGroupDeputyName" prefix-icon="el-icon-search" placeholder="请输入副组长"></el-input>
       </el-form-item>
-      <el-form-item>
+      <el-form-item prop="member">
         <el-input  v-model="searchForm.member" prefix-icon="el-icon-search" placeholder="请输入成员"></el-input>
       </el-form-item>
-      <br>
-      <el-form-item class="date-form">
+      <el-form-item prop="createDate" class="date-form">
         <el-date-picker
           v-model="searchForm.createDate"
           type="daterange"
@@ -35,7 +34,7 @@
           end-placeholder="创建日期结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item class="date-form">
+      <el-form-item prop="expiredDate" class="date-form">
         <el-date-picker
           v-model="searchForm.expiredDate"
           type="daterange"
@@ -49,69 +48,29 @@
     </el-form>
     <!--  表单  -->
     <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-    <el-button @click="deleteMultipleTeam" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
-    <el-table
-      ref="multipleTable"
-      :data="tableData"
-      stripe
-      border
-      fit
-      @selection-change="handleSelectionChange">
-      <el-table-column
-      type="selection"
-      width="55">
-      </el-table-column>
-      <el-table-column
-        fixed
-        prop="tecGroupName"
-        label="组名称">
-      </el-table-column>
-      <el-table-column
-        prop="groupTypeName"
-        label="类型">
-      </el-table-column>
-      <el-table-column
-        prop="tecGroupImg"
-        label="组头像" width="100">
+    <el-table :data="tableData" stripe border fit v-loading="loading">
+      <el-table-column fixed prop="tecGroupName" label="组名称"></el-table-column>
+      <el-table-column prop="groupTypeName" label="类型"></el-table-column>
+      <el-table-column prop="tecGroupImg" label="组头像" width="100">
         <template slot-scope="scope">
            <img :src="scope.row.tecGroupImg" class="team-avatar"/>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="leaderName"
-        label="组长">
-      </el-table-column>
-      <el-table-column
-        prop="deputyName"
-        label="副组长">
-      </el-table-column>
-      <el-table-column
-        prop="member"
-        label="成员"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="tecGroupCount"
-        label="人数" width="80">
-      </el-table-column>
-      <el-table-column
-        prop="tecGroupCreateDate"
-        label="创建时间" >
+      <el-table-column prop="leaderName" label="组长"></el-table-column>
+      <el-table-column prop="deputyName" label="副组长"></el-table-column>
+      <el-table-column prop="member" label="成员" width="180"></el-table-column>
+      <el-table-column prop="tecGroupCount" label="人数" width="80"></el-table-column>
+      <el-table-column prop="tecGroupCreateDate" label="创建时间" >
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupCreateDate"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="tecGroupExpiredDate"
-        label="过期时间">
+      <el-table-column prop="tecGroupExpiredDate" label="过期时间">
         <template slot-scope="scope">
            <span v-html="scope.row.tecGroupExpiredDate"></span>
         </template>
       </el-table-column>
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="120">
+      <el-table-column fixed="right" label="操作" width="120">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditDialog(scope.row.tecGroupId)"></el-button>
           <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteTeam(scope.row.tecGroupId)"></el-button>
@@ -119,9 +78,10 @@
       </el-table-column>
     </el-table>
     <el-pagination
-      background
+      background :page-size="pageSize"
       layout="total, prev, pager, next, jumper"
-      :total="totalItem">
+      :total="totalItem"
+      @next-click="getNextPage" @prev-click="getPrevPage" @current-change="getCurrentPage">
     </el-pagination>
     <add-dialog :handler="addDialogFormVisible" @closeDialog="closeAddDialog"></add-dialog>
     <edit-dialog :handler="editDialogFormVisible" :form="form" @closeDialog="closeEditDialog"></edit-dialog>
@@ -129,11 +89,15 @@
 </template>
 
 <script>
+
 import addDialog from '@/views/AppMain/MainModules/TeamManage/component/addTeam.vue'
 import editDialog from '@/views/AppMain/MainModules/TeamManage/component/editTeam.vue'
 export default {
   data () {
     return {
+      currentPage: 1,
+      pageSize: 10,
+      loading: false,
       searchForm: {
         tecGroupName: '',
         tecGroupType: '',
@@ -193,8 +157,7 @@ export default {
         tecGroupExpiredDate: [
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
-      },
-      multipleSelection: []
+      }
     }
   },
   created () {
@@ -203,34 +166,22 @@ export default {
   },
   methods: {
     searchTeam () {
-      if (this.searchForm.tecGroupLevel) {
-        this.searchForm.tecGroupLevel = parseInt(this.searchForm.tecGroupLevel)
+      let searchFormSend = { ...this.searchForm }
+      if (searchFormSend.tecGroupLevel) {
+        searchFormSend.tecGroupLevel = parseInt(searchFormSend.tecGroupLevel)
       }
-      if (this.searchForm.createDate) {
-        this.searchForm.createStartDate = this.getFormatTime(this.searchForm.createDate[0])
-        this.searchForm.createEndDate = this.getFormatTime(this.searchForm.createDate[1])
+      if (searchFormSend.createDate) {
+        searchFormSend.createStartDate = this.getFormatTime(searchFormSend.createDate[0])
+        searchFormSend.createEndDate = this.getFormatTime(searchFormSend.createDate[1])
       }
-      if (this.searchForm.expiredDate) {
-        this.searchForm.expiredStartDate = this.getFormatTime(this.searchForm.expiredDate[0])
-        this.searchForm.expiredEndDate = this.getFormatTime(this.searchForm.expiredDate[1])
+      if (searchFormSend.expiredDate) {
+        searchFormSend.expiredStartDate = this.getFormatTime(searchFormSend.expiredDate[0])
+        searchFormSend.expiredEndDate = this.getFormatTime(searchFormSend.expiredDate[1])
       }
-      console.log(this.searchForm)
-      let searchFormSend = {
-        tecGroupName: this.searchForm.tecGroupName,
-        tecGroupType: this.searchForm.tecGroupType,
-        tecGroupLeaderName: this.searchForm.tecGroupLeaderName,
-        tecGroupDeputyName: this.searchForm.tecGroupDeputyName,
-        tecGroupLevel: this.searchForm.tecGroupLevel,
-        member: this.searchForm.member,
-        createStartDate: this.searchForm.createStartDate,
-        createEndDate: this.searchForm.createEndDate,
-        expiredStartDate: this.searchForm.expiredStartDate,
-        expiredEndDate: this.searchForm.expiredEndDate
-      }
+      this.loading = true
       this.$axios.fetchGet('/api/group/lists', searchFormSend)
         .then(res => {
           if (res.data.statuscode === 200) {
-            console.log(res.data.content)
             let resList = res.data.content.list
             for (let i of resList) {
               i.tecGroupCreateDate = i.tecGroupCreateDate.replace(/\s/g, '<br>')
@@ -241,27 +192,13 @@ export default {
           } else if (res.data.statuscode === 400) {
             this.tableData = []
           }
+          this.loading = false
         })
     },
     // 重置表单方法
     resetSearch () {
       this.getTeamList()
-      // 这个方法会报错 用不了
-      // this.$refs[].resetFields()
-      this.searchForm = {
-        tecGroupName: '',
-        tecGroupType: '',
-        tecGroupLeaderName: '',
-        tecGroupDeputyName: '',
-        tecGroupLevel: '',
-        member: '',
-        createDate: '',
-        expiredDate: '',
-        createStartDate: '',
-        createEndDate: '',
-        expiredStartDate: '',
-        expiredEndDate: ''
-      }
+      this.$refs['searchForm'].resetFields()
     },
     openAddDialog () {
       this.addDialogFormVisible = true
@@ -335,35 +272,35 @@ export default {
     closeEditDialog () {
       this.editDialogFormVisible = false
     },
-    handleSelectionChange (val) {
-      this.multipleSelection = val
-    },
-    deleteMultipleTeam () {
-      let idsArr = []
-      for (let item of this.multipleSelection) {
-        idsArr.push(item.tecGroupId)
-      }
-      this.$axios.fetchPost('api/group/batchDelete/', {
-        ids: idsArr.toString()
-      })
-        .then(res => {
-          console.log(res)
-          if (res.data.statuscode === 200) {
-            this.getTeamList()
-          }
-        })
-    },
     deleteTeam (id) {
-      this.$axios.fetchPost('api/group/delete/' + id)
-        .then(res => {
-          console.log(res)
-          if (res.data.statuscode === 200) {
-            this.getTeamList()
-          }
+      this.$confirm('此操作将永久删除该项目, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.fetchPost('api/group/delete/' + id)
+          .then(res => {
+            if (res.data.statuscode === 200) {
+              this.getTeamList()
+              this.$message({
+                type: 'success',
+                message: '删除成功'
+              })
+            }
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
         })
+      })
     },
-    getTeamList () {
-      this.$axios.fetchGet('api/group/lists')
+    getTeamList (currentPage) {
+      this.loading = true
+      this.$axios.fetchGet('api/group/lists', {
+        currentPage: currentPage,
+        pageSize: this.pageSize
+      })
         .then(res => {
           if (res.data.statuscode === 200) {
             let resList = res.data.content.list
@@ -374,7 +311,20 @@ export default {
             this.tableData = resList
             this.totalItem = res.data.content.totalCount
           }
+          this.loading = false
         })
+    },
+    getNextPage () {
+      this.currentPage++
+      this.getTeamList(this.currentPage)
+    },
+    getPrevPage () {
+      this.currentPage--
+      this.getTeamList(this.currentPage)
+    },
+    getCurrentPage (val) {
+      this.currentPage = val
+      this.getTeamList(this.currentPage)
     },
     getFormatTime (timestr) {
       let newTime = new Date(timestr)

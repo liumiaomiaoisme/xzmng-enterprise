@@ -1,20 +1,8 @@
 <template>
-   <el-dialog title="添加技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="closeDialog">
+   <el-dialog title="添加技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
       <el-form :model="form" status-icon :rules="rules" ref="addTeamForm">
         <el-form-item label="组名称" :label-width="formLabelWidth" prop="tecGroupName">
           <el-input v-model="form.tecGroupName" autocomplete="off" placeholder="请输入组名称"></el-input>
-        </el-form-item>
-        <el-form-item label="组头像" :label-width="formLabelWidth" prop="tecGroupImg">
-          <el-upload
-            class="avatar-uploader" name="upload-file"
-            action="http://47.100.56.42:9876/upload"
-            :show-file-list="false"
-            enctype="multipart/form-data"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="form.tecGroupImg" :src="form.tecGroupImg" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
         </el-form-item>
         <el-form-item label="组等级" :label-width="formLabelWidth" prop="tecGroupLevel">
           <el-select v-model="form.tecGroupLevel" placeholder="请选择组等级">
@@ -51,19 +39,40 @@
             placeholder="选择过期时间">
           </el-date-picker>
         </el-form-item>
+        <el-form-item label="组头像" :label-width="formLabelWidth" prop="tecGroupImg">
+          <el-upload
+            class="avatar-uploader" name="upload-file"
+            action="http://47.100.56.42:9876/upload"
+            :show-file-list="false"
+            enctype="multipart/form-data"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload">
+            <img v-if="form.tecGroupImg" :src="form.tecGroupImg" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog">取 消</el-button>
-        <el-button type="primary" @click="addForm">确 定</el-button>
+        <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
+          <p>取消将会丢失已编辑的内容，确定取消吗？</p>
+          <div style="text-align: right; margin: 0">
+            <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
+            <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
+          </div>
+          <el-button slot="reference" size="small">取 消</el-button>
+        </el-popover>
+        <el-button type="primary" size="small" @click="addForm">确 定</el-button>
       </div>
     </el-dialog>
 </template>
 
 <script>
+import { throttle } from '@/util/utils.js'
 export default {
   props: ['handler'],
   data () {
     return {
+      confirmVisible: false,
       form: {
         tecGroupName: '',
         tecGroupImg: '',
@@ -104,7 +113,8 @@ export default {
         tecGroupExpiredDate: [
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
-      }
+      },
+      timer: null
     }
   },
   computed: {
@@ -116,7 +126,9 @@ export default {
     this.getAllMenber()
   },
   methods: {
+    maskFake () {},
     closeDialog () {
+      this.confirmVisible = false
       this.$emit('closeDialog')
       this.$refs['addTeamForm'].resetFields()
     },
@@ -130,7 +142,8 @@ export default {
       let s = newTime.getSeconds().toString().padStart(2, '0')
       return `${y}-${mo}-${d} ${h}:${mi}:${s}`
     },
-    addForm () {
+    addForm: throttle(function () {
+      console.log(this)
       this.$refs['addTeamForm'].validate((valid) => {
         if (valid) {
           let addForm = {
@@ -149,6 +162,16 @@ export default {
               if (res.data.statuscode === 200) {
                 this.$parent.getTeamList()
                 this.closeDialog()
+                this.$message({
+                  type: 'success',
+                  message: '添加成功'
+                })
+              } else if (res.data.statuscode === 400 && res.data.msg === '添加组失败，该小组已存在！') {
+                this.$message({
+                  type: 'error',
+                  message: '该类型同名小组已存在，换一个更酷的小组名称吧!',
+                  duration: 10000
+                })
               }
             })
         } else {
@@ -156,7 +179,7 @@ export default {
           return false
         }
       })
-    },
+    }),
     getAllMenber () {
       this.$axios.fetchGet('api/emp/tecEmp')
         .then(res => {
@@ -190,3 +213,11 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+  .add-team-container{
+    .el-dialog {
+      min-width: 600px!important;
+      width: 600px!important;
+    }
+  }
+</style>

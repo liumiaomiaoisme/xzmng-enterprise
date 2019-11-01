@@ -8,6 +8,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import axios from '@/util/axios'
 import QuillEditor from 'vue-quill-editor'
 import '@/assets/base.css'
+// import { throttle } from '@/util/utils.js'
 
 Vue.use(ElementUI)
 Vue.use(QuillEditor)

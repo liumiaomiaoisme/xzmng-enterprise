@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="编辑分享" :visible.sync="this.$store.state.editShareVisible" class="share-dialog-container" :before-close="closeDialog">
+   <el-dialog title="编辑分享" :visible.sync="this.$store.state.editShareVisible" class="share-dialog-container" :before-close="maskFake">
      <el-form :model="addShareForm" status-icon ref="addShareForm" size="small" :rules="rules">
       <el-form-item label="分享标题" :label-width="formLabelWidth" prop="tecShareTitle">
         <el-input v-model="addShareForm.tecShareTitle" autocomplete="off" placeholder="请输入分享标题"></el-input>
@@ -103,6 +103,7 @@ export default {
   },
   methods: {
     // 富文本编辑器
+    maskFake () {},
     onEditorBlur (e) {}, // 失去焦点事件
     onEditorFocus () {}, // 获得焦点事件
     onEditorChange () {},

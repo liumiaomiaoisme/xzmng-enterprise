@@ -3,12 +3,12 @@
     <el-row>
       <el-col :span="24">
         <el-menu
-          default-active="0"
+          :default-active="this.$route.path"
           class="el-menu-vertical-demo"
           background-color="#545c64"
           text-color="#fff"
           active-text-color="#409EFF" >
-          <el-menu-item v-for="(item, i) in menuGroup" :key='i' :index="i.toString()">
+          <el-menu-item v-for="(item, i) in menuGroup" :key='i' :index="item.itemRouter">
             <router-link :to="item.itemRouter">
               <i :class="item.itemIcon"></i>
               <span>{{item.itemName}}</span>
@@ -33,8 +33,6 @@ export default {
         { itemName: '知识分享', itemRouter: '/TechHome/KnowledgeShare', itemIcon: 'el-icon-s-claim' },
         { itemName: '项目阶段列表', itemRouter: '/TechHome/ProjectPhaseList', itemIcon: 'el-icon-s-marketing' }]
     }
-  },
-  methods: {
   }
 }
 </script>

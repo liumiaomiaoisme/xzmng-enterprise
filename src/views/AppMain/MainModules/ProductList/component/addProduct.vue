@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加产品" :visible.sync="this.$store.state.addProductVisible" class="project-dialog-container" :before-close="closeDialog">
+   <el-dialog title="添加产品" :visible.sync="this.$store.state.addProductVisible" class="product-dialog-container" :before-close="maskFake">
       <el-form :model="addProductForm" status-icon ref="addProductForm" size="small" :rules="rules">
         <el-form-item label="产品名称" :label-width="formLabelWidth" prop="tecProductName">
           <el-input v-model="addProductForm.tecProductName" autocomplete="off" placeholder="请输入产品名称"></el-input>
@@ -42,7 +42,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="预计完成天数" :label-width="formLabelWidth" prop="tecProductCompleteDays">
-          <el-input v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计完成天数"></el-input>
+          <el-input type="number" v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计完成天数"></el-input>
         </el-form-item>
         <el-form-item label="产品发布日期" :label-width="formLabelWidth" prop="tecProductPublishDate">
           <el-date-picker
@@ -55,7 +55,7 @@
         </el-form-item>
         <el-form-item label="产品审批人" :label-width="formLabelWidth" prop="tecProductCheckMember">
           <el-select v-model="addProductForm.tecProductCheckMember" placeholder="请选择产品审批人">
-            <el-option :label="item.posName + '--' + item.empName" :value="item.empId" v-for="item in this.$store.state.ProductReviewerList" :key="item.empId"></el-option>
+            <el-option :label="item.departmentName +'--'+ item.posName + '--' + item.empName" :value="item.empId" v-for="item in this.$store.state.ProductReviewerList" :key="item.empId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="产品审核意见" :label-width="formLabelWidth" prop="tecProductAuditmind">
@@ -87,6 +87,18 @@ export default {
     return {
       autosize: false,
       addProductForm: {
+        tecProductName: '',
+        tecProductDesc: '',
+        tecProductType: '',
+        tecProductResearchSummary: '',
+        tecProductPrincipal: '',
+        ui: '',
+        dev: '',
+        test: '',
+        tecProductCompleteDays: null,
+        tecProductPublishDate: '',
+        tecProductCheckMember: '',
+        tecProductAuditmind: '',
         tecProductAnnex: ''
       },
       relativePath: '',
@@ -132,10 +144,12 @@ export default {
         tecProductAnnex: [
           { required: true, message: '请上传附件', trigger: 'blur' }
         ]
-      }
+      },
+      timer: null
     }
   },
   methods: {
+    maskFake () {},
     closeDialog () {
       this.$store.commit('closeProductDialog')
       this.$refs['addProductForm'].resetFields()
@@ -149,18 +163,21 @@ export default {
           addForm.dev = addForm.dev.toString()
           addForm.test = addForm.test.toString()
           addForm.tecProductAnnex = 'http://47.100.56.42:9876' + this.relativePath
-          this.$axios.fetchPost('/api/product/add', addForm)
-            .then(res => {
-              if (res.data.statuscode === 200) {
-                this.$store.commit('getProductList', {
-                  currentPage: 1
-                })
-                this.closeDialog()
-              }
-            })
-            .catch(err => {
-              console.log(err)
-            })
+          clearTimeout(this.timer)
+          this.timer = setTimeout(() => {
+            this.$axios.fetchPost('/api/product/add', addForm)
+              .then(res => {
+                if (res.data.statuscode === 200) {
+                  this.$store.commit('getProductList', {
+                    currentPage: 1
+                  })
+                  this.closeDialog()
+                }
+              })
+              .catch(err => {
+                console.log(err)
+              })
+          }, 1000)
         } else {
           console.log('error submit!!')
           return false
@@ -187,12 +204,18 @@ export default {
 }
 </script>
 <style lang="scss">
-  .project-dialog-container{
+  .el-dialog__headerbtn{
+    display: none!important;
+  }
+  .product-dialog-container{
     .el-dialog{
       margin-top: 5vh!important;
       box-sizing: border-box;
       min-width: 600px;
       width: 40%;
+      .el-dialog__headerbtn{
+        display: none!important;
+      }
       .el-form-item--small.el-form-item {
           margin-bottom: 22px;
       }

@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="编辑产品" :visible.sync="this.$store.state.editProductVisible" class="project-dialog-container" :before-close="closeDialog">
+   <el-dialog title="编辑产品" :visible.sync="this.$store.state.editProductVisible" class="product-dialog-container" :before-close="maskFake">
      <el-form :model="addProductForm" status-icon ref="addProductForm" size="small" :rules="rules">
         <el-form-item label="产品名称" :label-width="formLabelWidth" prop="tecProductName">
           <el-input v-model="addProductForm.tecProductName" autocomplete="off" placeholder="请输入产品名称"></el-input>
@@ -42,7 +42,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="预计完成天数" :label-width="formLabelWidth" prop="tecProductCompleteDays">
-          <el-input v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计完成天数"></el-input>
+          <el-input type="number" v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计完成天数"></el-input>
         </el-form-item>
         <el-form-item label="产品发布日期" :label-width="formLabelWidth" prop="tecProductPublishDate">
           <el-date-picker
@@ -138,6 +138,7 @@ export default {
     }
   },
   methods: {
+    maskFake () {},
     closeDialog () {
       this.$store.commit('closeEditProduct')
       this.$refs['addProductForm'].resetFields()

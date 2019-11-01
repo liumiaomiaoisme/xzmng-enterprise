@@ -1,20 +1,8 @@
 <template>
-   <el-dialog title="编辑技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="closeDialog">
+   <el-dialog title="编辑技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
       <el-form :model="form" :rules="rules" ref="addTeamForm">
         <el-form-item label="组名称" :label-width="formLabelWidth" prop="tecGroupName">
           <el-input v-model="form.tecGroupName" autocomplete="off" placeholder="请输入组名称"></el-input>
-        </el-form-item>
-        <el-form-item label="组头像" :label-width="formLabelWidth" prop="tecGroupImg">
-          <el-upload
-            class="avatar-uploader" name="upload-file"
-            action="http://47.100.56.42:9876/upload"
-            :show-file-list="false"
-            enctype="multipart/form-data"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="form.tecGroupImg" :src="form.tecGroupImg" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
         </el-form-item>
         <el-form-item label="组等级" :label-width="formLabelWidth" prop="tecGroupLevel">
           <el-select v-model="form.tecGroupLevel" placeholder="请选择组等级">
@@ -51,10 +39,29 @@
             placeholder="选择过期时间">
           </el-date-picker>
         </el-form-item>
+        <el-form-item label="组头像" :label-width="formLabelWidth" prop="tecGroupImg">
+          <el-upload
+            class="avatar-uploader" name="upload-file"
+            action="http://47.100.56.42:9876/upload"
+            :show-file-list="false"
+            enctype="multipart/form-data"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload">
+            <img v-if="form.tecGroupImg" :src="form.tecGroupImg" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog">取 消</el-button>
-        <el-button type="primary" @click="addForm">确 定</el-button>
+        <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
+          <p>取消将会丢失已编辑的内容，确定取消吗？</p>
+          <div style="text-align: right; margin: 0">
+            <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
+            <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
+          </div>
+          <el-button slot="reference" size="small">取 消</el-button>
+        </el-popover>
+        <el-button type="primary" size="small" @click="addForm">确 定</el-button>
       </div>
     </el-dialog>
 </template>
@@ -64,6 +71,7 @@ export default {
   props: ['handler', 'id', 'form'],
   data () {
     return {
+      confirmVisible: false,
       relativePath: '',
       formLabelWidth: '100px',
       staffList: [],
@@ -105,7 +113,9 @@ export default {
     this.getAllMenber()
   },
   methods: {
+    maskFake () {},
     closeDialog () {
+      this.confirmVisible = false
       this.$emit('closeDialog')
       this.$refs['addTeamForm'].resetFields()
     },

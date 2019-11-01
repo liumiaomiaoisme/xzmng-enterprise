@@ -9,19 +9,24 @@
       <el-form-item prop="tecProjectPrincipal">
         <el-input  v-model="projectSearchForm.tecProjectPrincipal" prefix-icon="el-icon-search" placeholder="请输入项目负责人"></el-input>
       </el-form-item>
+<!--      <el-form-item prop="tecProjectStatus">-->
+<!--        <el-select placeholder="请选择项目状态" v-model="projectSearchForm.tecProjectStatus" clearable>-->
+<!--          <el-option :label="item.StatesName" :value="item.StatesId" v-for="item in projectStates" :key="item.StatesId"></el-option>-->
+<!--        </el-select>-->
+<!--      </el-form-item>-->
       <el-form-item class="date-form" prop="startDate">
         <el-date-picker
-          v-model="projectSearchForm.startDate" type="daterange" range-separator="至" start-placeholder="项目开始日期范围起" end-placeholder="项目开始日期范围止">
+          v-model="projectSearchForm.startDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="项目开始日期范围起" end-placeholder="项目开始日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-form-item class="date-form" prop="publishDate">
         <el-date-picker
-          v-model="projectSearchForm.publishDate" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
+          v-model="projectSearchForm.publishDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
         </el-date-picker>
       </el-form-item>
-      <el-form-item class="date-form" prop="estimatedEnd">
+      <el-form-item class="date-form" prop="estimatedEndDate">
         <el-date-picker
-          v-model="projectSearchForm.estimatedEndDate" type="daterange" range-separator="至" start-placeholder="预结束日期范围起" end-placeholder="预结束日期范围止">
+          v-model="projectSearchForm.estimatedEndDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="预结束日期范围起" end-placeholder="预结束日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-button type="primary" size="mini" icon="el-icon-search" @click="searchProject" plain>查询</el-button>
@@ -29,11 +34,8 @@
     </el-form>
     <!-- 项目列表   -->
     <el-button @click="openAddDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-    <el-button @click="deleteMultipleProject" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
-    <el-table ref="multipleTable" :data="this.$store.state.projectListTableData"
-              stripe border fit @selection-change="handleSelectionChange" v-loading="this.$store.state.loading">
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column prop="tecProjectName" label="项目名称" fixed></el-table-column>
+    <el-table :data="this.$store.state.projectListTableData" stripe border fit v-loading="this.$store.state.loading">
+      <el-table-column prop="tecProjectName" label="项目名称" fixed width="150"></el-table-column>
       <el-table-column prop="tecProjectDesc" label="项目简要">
         <template slot-scope="scope">
           <el-popover placement="top-start" title="项目简要" width="200" trigger="hover" :content="scope.row.tecProjectDesc">
@@ -58,34 +60,34 @@
       </el-table-column>
       <el-table-column prop="tecProjectStartDate" label="开始时间"  width="100">
         <template slot-scope="scope">
-           <span v-html="scope.row.tecGroupCreateDate"></span>
+           <span v-html="scope.row.tecProjectStartDate"></span>
         </template>
       </el-table-column>
       <el-table-column prop="tecProjectEstimatedEndDate" label="预结束时间" width="100">
         <template slot-scope="scope">
-           <span v-html="scope.row.tecGroupExpiredDate"></span>
+           <span v-html="scope.row.tecProjectEstimatedEndDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="stageType" label="目前开发阶段" width="106"></el-table-column>
+<!--      <el-table-column prop="stageType" label="目前开发阶段" width="106"></el-table-column>-->
       <el-table-column prop="tecProjectVersion" label="目前开发版本" width="106"></el-table-column>
       <el-table-column prop="tecProjectCommitCount" label="提交次数统计" width="106"></el-table-column>
       <el-table-column prop="tecProjectPublishDate" label="预计上线日期" width="106">
         <template slot-scope="scope">
-           <span v-html="scope.row.tecGroupCreateDate"></span>
+           <span v-html="scope.row.tecProjectPublishDate"></span>
         </template>
       </el-table-column>
       <el-table-column prop="tecProjectCapacity" label="预计承载量" width="100"></el-table-column>
       <el-table-column fixed="right" label="操作" width="96">
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditDialog(scope.row.tecProjectId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteProject(scope.row.tecProjectId)"></el-button>
+          <el-button slot="reference" :disabled="scope.row.disabled" type="danger" icon="el-icon-delete" circle size="small" @click="deleteProject(scope.row.tecProjectId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
     <el-pagination
-      background :page-size="this.$store.state.productListPageSize"
+      background :page-size="this.$store.state.projectListPageSize"
       layout="total, prev, pager, next, jumper"
-      :total="this.$store.state.productListTotalCount"
+      :total="this.$store.state.projectListTotalCount"
       @next-click="getNextPage" @prev-click="getPrevPage" @current-change="getCurrentPage">
     </el-pagination>
     <add-dialog></add-dialog>
@@ -96,14 +98,30 @@
 <script>
 import addDialog from '@/views/AppMain/MainModules/ProjectList/component/addProject.vue'
 import editDialog from '@/views/AppMain/MainModules/ProjectList/component/editProject.vue'
+import { dateKeyClear, clearEmptyKey } from '@/util/utils.js'
 export default {
   data () {
     return {
-      multipleSelection: [],
+      deleteConfirm: false,
       currentPage: 1,
-      projectSearchForm: {},
-      addDialogFormVisible: false,
-      editDialogFormVisible: false
+      projectSearchForm: {
+        tecProjectName: '',
+        tecProjectPrincipal: '',
+        startDate: '',
+        publishDate: '',
+        estimatedEndDate: ''
+      },
+      projectStates: [{
+        StatesId: 0,
+        StatesName: '未开始'
+      }, {
+        StatesId: 1,
+        StatesName: '进行中'
+      }, {
+        StatesId: 2,
+        StatesName: '已结束'
+      }],
+      timer: null
     }
   },
   created () {
@@ -118,22 +136,19 @@ export default {
     openEditDialog (id) {
       this.$store.commit('openEditDialog', id)
     },
-    deleteMultipleTeam () {
-      console.log(1)
-    },
     deleteProject (id) {
-      this.$store.commit('deleteProject', id)
-    },
-    handleSelectionChange (val) {
-      this.multipleSelection = val
-    },
-    deleteMultipleProject () {
-      let idsArr = []
-      for (let item of this.multipleSelection) {
-        idsArr.push(item.tecProjectId)
-      }
-      let ids = idsArr.toString()
-      this.$store.commit('deleteMultipleProject', ids)
+      this.$confirm('此操作将永久删除该项目, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('deleteProject', id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     },
     getNextPage () {
       this.$store.commit('getProjectList', {
@@ -152,39 +167,22 @@ export default {
       })
     },
     searchProject () {
-      let searchForm = this.projectSearchForm
-      if (searchForm.startDate) {
-        searchForm.startDateStart = this.getFormatTime(searchForm.startDate[0])
-        searchForm.startDateEnd = this.getFormatTime(searchForm.startDate[1])
-      }
-      if (searchForm.publishDate) {
-        searchForm.publishDateStart = this.getFormatTime(searchForm.publishDate[0])
-        searchForm.publishDateEnd = this.getFormatTime(searchForm.publishDate[1])
-      }
-      if (searchForm.estimatedEndDate) {
-        searchForm.estimatedEndDateStart = this.getFormatTime(searchForm.estimatedEndDate[0])
-        searchForm.estimatedEndDateEnd = this.getFormatTime(searchForm.estimatedEndDate[1])
-      }
-      delete searchForm.startDate
-      delete searchForm.publishDate
-      delete searchForm.estimatedEndDate
-      this.$store.commit('searchProjectList', searchForm)
+      let searchForm = { ...this.projectSearchForm }
+      dateKeyClear(searchForm, 'startDate', 'startDateStart', 'startDateEnd')
+      dateKeyClear(searchForm, 'publishDate', 'publishDateStart', 'publishDateEnd')
+      dateKeyClear(searchForm, 'estimatedEndDate', 'estimatedEndDateStart', 'estimatedEndDateEnd')
+      clearEmptyKey(searchForm)
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        this.$store.commit('searchProjectList', searchForm)
+      }, 500)
     },
     resetSearch (formName) {
       this.$refs[formName].resetFields()
       this.$store.commit('getProjectList', {
         currentPage: 1
       })
-    },
-    getFormatTime (data) {
-      let newTime = new Date(data)
-      let y = newTime.getFullYear()
-      let mo = (newTime.getMonth() + 1).toString().padStart(2, '0')
-      let d = newTime.getDate().toString().padStart(2, '0')
-      let h = newTime.getHours().toString().padStart(2, '0')
-      let mi = newTime.getMinutes().toString().padStart(2, '0')
-      let s = newTime.getSeconds().toString().padStart(2, '0')
-      return `${y}-${mo}-${d} ${h}:${mi}:${s}`
+      console.log(this.projectSearchForm)
     }
   },
   components: {

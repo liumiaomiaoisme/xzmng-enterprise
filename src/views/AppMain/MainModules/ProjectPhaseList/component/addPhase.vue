@@ -1,7 +1,7 @@
 <template>
-   <el-dialog title="添加项目阶段" :visible.sync="this.$store.state.addProjectPhaseVisible" class="projectPhase-dialog-container" :before-close="closeDialog">
+   <el-dialog title="添加项目阶段" :visible.sync="this.$store.state.addProjectPhaseVisible" class="projectPhase-dialog-container" :before-close="maskFake">
       <el-form :model="addProjectPhaseForm" status-icon ref="addProjectPhaseForm" :rules="rules">
-        <el-form-item label="项目名称" :label-width="formLabelWidth" prop="tecStageProject">
+        <el-form-item label="所属项目名称" :label-width="formLabelWidth" prop="tecStageProject">
           <el-select v-model="addProjectPhaseForm.tecStageProject" placeholder="请选择项目名称">
             <el-option :label="item.tecProjectName" :value="item.tecProjectId" v-for="item in this.$store.state.projectsList" :key="item.tecProjectId"></el-option>
           </el-select>
@@ -48,6 +48,12 @@ export default {
     return {
       autosize: false,
       addProjectPhaseForm: {
+        tecStageProject: '',
+        tecDevPrincipal: '',
+        tecStageReceiveDate: '',
+        tecStageStatus: null,
+        tecStageTestStatus: '',
+        tecStageFeedback: ''
       },
       formLabelWidth: '126px',
       rules: {
@@ -69,10 +75,12 @@ export default {
         tecStageFeedback: [
           { required: true, message: '请输入测试反馈意见', trigger: 'blur' }
         ]
-      }
+      },
+      timer: null
     }
   },
   methods: {
+    maskFake () {},
     closeDialog () {
       this.$store.commit('closeAddProjectPhase')
       this.$refs['addProjectPhaseForm'].resetFields()
@@ -80,18 +88,21 @@ export default {
     addProjectPhase () {
       this.$refs['addProjectPhaseForm'].validate((valid) => {
         if (valid) {
-          this.$axios.fetchPost('/api/stage/add', this.addProjectPhaseForm)
-            .then(res => {
-              if (res.data.statuscode === 200) {
-                this.$store.commit('getProjectPhaseList', {
-                  currentPage: 1
-                })
-                this.closeDialog()
-              }
-            })
-            .catch(err => {
-              console.log(err)
-            })
+          clearTimeout(this.timer)
+          this.timer = setTimeout(() => {
+            this.$axios.fetchPost('/api/stage/add', this.addProjectPhaseForm)
+              .then(res => {
+                if (res.data.statuscode === 200) {
+                  this.$store.commit('getProjectPhaseList', {
+                    currentPage: 1
+                  })
+                  this.closeDialog()
+                }
+              })
+              .catch(err => {
+                console.log(err)
+              })
+          }, 1000)
         } else {
           console.log('error submit!!')
           return false

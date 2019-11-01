@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from '@/util/axios'
+import { Message } from 'element-ui'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     user: {},
     token: localStorage.getItem('token') ? localStorage.getItem('token') : '',
-    title: '',
     username: '',
     loading: false,
     // 项目列表
@@ -51,9 +51,127 @@ export default new Vuex.Store({
     editProjectPhaseVisible: false,
     editProjectPhaseForm: {},
     // 项目阶段项目列表
-    projectsList: []
+    projectsList: [],
+    // 会议列表
+    meetingTableData: [],
+    meetingPageSize: 10,
+    meetingTotalCount: null,
+    addMeetingVisible: false,
+    editMeetingVisible: false,
+    editMeetingForm: {}
   },
   mutations: {
+    // 会议列表
+    getMeetingList (state, data) {
+      state.loading = true
+      axios.fetchGet('/api/meeting/lists', {
+        currentPage: data.currentPage,
+        pageSize: state.meetingPageSize
+      })
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.meetingTableData = res.data.content.list
+            for (let i of state.meetingTableData) {
+              if (i.tecMeetingStartDate) {
+                this.commit('getFormatTime', i.tecMeetingStartDate)
+                i.tecMeetingStartDate = state.dateTmp
+              }
+              if (i.tecMeetingEndDate) {
+                this.commit('getFormatTime', i.tecMeetingEndDate)
+                i.tecMeetingEndDate = state.dateTmp
+              }
+              if (i.tecMeetingSolveProblem === 0) {
+                i.tecMeetingSolveProblem = '未解决'
+              } else if (i.tecMeetingSolveProblem === 1) {
+                i.tecMeetingSolveProblem = '已解决'
+              }
+            }
+            state.loading = false
+            state.meetingTotalCount = res.data.content.totalCount
+          }
+        })
+    },
+    searchMeeting (state, data) {
+      data.currentPage = 1
+      axios.fetchGet('/api/meeting/lists', data)
+        .then(res => {
+          console.log(res)
+          if (res.data.statuscode === 200) {
+            state.meetingTableData = res.data.content.list
+            for (let i of state.meetingTableData) {
+              if (i.tecMeetingStartDate) {
+                this.commit('getFormatTime', i.tecMeetingStartDate)
+                i.tecMeetingStartDate = state.dateTmp
+              }
+              if (i.tecMeetingEndDate) {
+                this.commit('getFormatTime', i.tecMeetingEndDate)
+                i.tecMeetingEndDate = state.dateTmp
+              }
+              if (i.tecMeetingSolveProblem === 0) {
+                i.tecMeetingSolveProblem = '未解决'
+              } else if (i.tecMeetingSolveProblem === 1) {
+                i.tecMeetingSolveProblem = '已解决'
+              }
+            }
+            state.loading = false
+            state.meetingTotalCount = res.data.content.totalCount
+          } else if (res.data.msg === '没有任何会议的信息') {
+            state.meetingTableData = []
+          }
+        })
+    },
+    openAddMeetingDialog (state) {
+      this.commit('getAllMember')
+      state.addMeetingVisible = true
+    },
+    closeAddMeeting (state) {
+      state.addMeetingVisible = false
+    },
+    openEditMeeting (state, data) {
+      this.commit('getAllMember')
+      axios.fetchGet('/api/meeting/list/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.editMeetingForm = res.data.content[0]
+            if (state.editMeetingForm.empId) {
+              state.editMeetingForm.empId = state.editMeetingForm.empId.split(',').map(Number)
+            }
+            if (state.editMeetingForm.tecMeetingSolveProblem !== undefined) {
+              if (state.editMeetingForm.tecMeetingSolveProblem === 0) {
+                state.editMeetingForm.tecMeetingSolveProblem = '未解决'
+              } else if (state.editMeetingForm.tecMeetingSolveProblem === 1) {
+                state.editMeetingForm.tecMeetingSolveProblem = '已解决'
+              }
+            }
+            if (state.editMeetingForm.tecMeetingStartDate) {
+              this.commit('getFormatTime', state.editMeetingForm.tecMeetingStartDate)
+              state.editMeetingForm.tecMeetingStartDate = state.dateTmp
+            }
+            if (state.editMeetingForm.tecMeetingEndDate) {
+              this.commit('getFormatTime', state.editMeetingForm.tecMeetingEndDate)
+              state.editMeetingForm.tecMeetingEndDate = state.dateTmp
+            }
+            state.editMeetingVisible = true
+          }
+        })
+    },
+    closeEditMeeting (state) {
+      state.editMeetingVisible = false
+    },
+    deleteMeeting (state, data) {
+      axios.fetchPost('/api/meeting/delete/' + data)
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            this.commit('getMeetingList', {
+              currentPage: 1
+            })
+            Message({
+              message: '删除成功',
+              type: 'success'
+            })
+          }
+        })
+    },
     // 项目阶段
     deleteMultipleProjectPhase (state, data) {
       axios.fetchPost('/api/stage/batchDelete', {
@@ -356,8 +474,38 @@ export default new Vuex.Store({
         pageSize: state.projectListPageSize
       })
         .then(res => {
+          console.log(res)
           if (res.data.statuscode === 200) {
             state.projectListTableData = res.data.content.list
+            for (let i of state.projectListTableData) {
+              i.disabled = true
+              if (i.tecProjectStartDate) {
+                this.commit('getFormatTime', i.tecProjectStartDate)
+                i.tecProjectStartDate = state.dateTmp
+              }
+              if (i.tecProjectPublishDate) {
+                this.commit('getFormatTime', i.tecProjectPublishDate)
+                i.tecProjectPublishDate = state.dateTmp
+              }
+              if (i.tecProjectEstimatedEndDate) {
+                this.commit('getFormatTime', i.tecProjectEstimatedEndDate)
+                i.tecProjectEstimatedEndDate = state.dateTmp
+              }
+              // if (i.tecProjectStatus !== undefined || null) {
+              //   switch (i.tecProjectStatus) {
+              //     case 0:
+              //       i.tecProjectStatus = '未开始'
+              //       i.disabled = false
+              //       break
+              //     case 1:
+              //       i.tecProjectStatus = '进行中'
+              //       break
+              //     case 2:
+              //       i.tecProjectStatus = '已结束'
+              //       break
+              //   }
+              // }
+            }
             state.loading = false
             state.projectListTotalCount = res.data.content.totalCount
           }
@@ -376,9 +524,41 @@ export default new Vuex.Store({
         .then(res => {
           if (res.data.statuscode === 200) {
             state.projectListTableData = res.data.content.list
-            state.loading = false
-            state.projectListTotalCount = res.data.content.totalCount
+            for (let i of state.projectListTableData) {
+              i.disabled = true
+              if (i.tecProjectStartDate) {
+                this.commit('getFormatTime', i.tecProjectStartDate)
+                i.tecProjectStartDate = state.dateTmp
+              }
+              if (i.tecProjectPublishDate) {
+                this.commit('getFormatTime', i.tecProjectPublishDate)
+                i.tecProjectPublishDate = state.dateTmp
+              }
+              if (i.tecProjectEstimatedEndDate) {
+                this.commit('getFormatTime', i.tecProjectEstimatedEndDate)
+                i.tecProjectEstimatedEndDate = state.dateTmp
+              }
+              if (i.tecProjectStatus !== undefined || null) {
+                switch (i.tecProjectStatus) {
+                  case 0:
+                    i.tecProjectStatus = '未开始'
+                    i.disabled = false
+                    break
+                  case 1:
+                    i.tecProjectStatus = '进行中'
+                    break
+                  case 2:
+                    i.tecProjectStatus = '已结束'
+                    break
+                }
+              }
+            }
+            console.log(state.projectListTableData)
+          } else if (res.data.msg === '没有任何项目的信息！') {
+            state.projectListTableData = []
           }
+          state.loading = false
+          state.projectListTotalCount = res.data.content.totalCount
         })
         .catch(err => {
           console.log(err)
@@ -388,6 +568,10 @@ export default new Vuex.Store({
       axios.fetchPost('/api/project/delete/' + data)
         .then(res => {
           if (res.data.statuscode === 200) {
+            Message({
+              type: 'success',
+              message: '删除成功!'
+            })
             this.commit('getProjectList', {
               currentPage: 1
             })
