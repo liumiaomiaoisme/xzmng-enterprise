@@ -2,6 +2,9 @@
   <div class="project-phase-container">
     <!-- project-phase-search-->
     <el-form :model="projectPhaseSearchForm" class="search-container" size="mini" ref="projectPhaseSearchForm">
+      <el-form-item prop="tecStageName">
+        <el-input v-model="projectPhaseSearchForm.tecStageName" prefix-icon="el-icon-search" placeholder="请输入阶段名称"></el-input>
+      </el-form-item>
       <el-form-item prop="tecProjectName">
         <el-input v-model="projectPhaseSearchForm.tecProjectName" prefix-icon="el-icon-search" placeholder="请输入项目名称"></el-input>
       </el-form-item>
@@ -23,12 +26,12 @@
       </el-form-item>
       <el-form-item class="date-form" prop="receiveDate">
         <el-date-picker
-          v-model="projectPhaseSearchForm.receiveDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="项目领取日期范围起" end-placeholder="项目领取日期范围止">
+          v-model="projectPhaseSearchForm.receiveDate" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" type="daterange" range-separator="至" start-placeholder="领取日期范围起" end-placeholder="领取日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-form-item class="date-form" prop="estimatedDate">
         <el-date-picker
-          v-model="projectPhaseSearchForm.estimatedDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="预期结束日期范围起" end-placeholder="预期结束日期范围止">
+          v-model="projectPhaseSearchForm.estimatedDate" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" type="daterange" range-separator="至" start-placeholder="预期结束日期范围起" end-placeholder="预期结束日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-button type="primary" size="mini" icon="el-icon-search" @click="searchProjectPhase" plain>查询</el-button>
@@ -36,15 +39,12 @@
     </el-form>
     <!-- project-phase-table-->
     <el-button @click="openAddPhaseDialog" type="primary" size="mini" icon="el-icon-circle-plus">添加</el-button>
-    <el-button @click="deleteMultipleProjectPhase" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>
-    <el-table ref="multipleTable" :data="this.$store.state.projectPhaseList" stripe border fit
-              v-loading="this.$store.state.loading" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column prop="stageType" label="阶段名称" fixed></el-table-column>
+<!--    <el-button @click="deleteMultipleProjectPhase" type="danger" size="mini" icon="el-icon-delete-solid">批量删除</el-button>-->
+    <el-table ref="multipleTable" :data="this.$store.state.projectPhaseList" stripe border fit v-loading="this.$store.state.loading">
+      <el-table-column prop="tecStageName" label="阶段名称" fixed></el-table-column>
       <el-table-column prop="tecProjectName" label="所属项目"></el-table-column>
       <el-table-column prop="devPrincipalName" label="开发负责人"></el-table-column>
       <el-table-column prop="principalName" label="项目负责人"></el-table-column>
-      <el-table-column prop="tecStageStatus" label="阶段状态"></el-table-column>
       <el-table-column prop="tecStageReceiveDate" label="领取时间" width="160" >
         <template slot-scope="scope">
            <span v-html="scope.row.tecStageReceiveDate"></span>
@@ -55,18 +55,35 @@
            <span v-html="scope.row.tecProjectEstimatedEnd"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="tecStageTestStatus" label="测试状态"></el-table-column>
+      <el-table-column prop="tecStageStatus" label="阶段状态"></el-table-column>
+      <el-table-column prop="tecStageTestStatus" label="测试状态">
+        <template slot-scope="scope">
+           <span :class="{test:scope.row.isDev}">{{scope.row.tecStageTestStatus}}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="tecStageFeedback" label="测试反馈意见">
         <template slot-scope="scope">
-          <el-popover placement="top-start" title="测试反馈意见" trigger="hover" :content="scope.row.tecStageFeedback">
+          <el-popover v-if="scope.row.isShowfeedBack" placement="top-start" title="测试反馈意见" trigger="hover" :content="scope.row.tecStageFeedback">
             <el-button slot="reference" class="tips-btn">查看反馈</el-button>
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="96">
+      <el-table-column fixed="right" label="测试结果操作" width="120">
+        <template slot-scope="scope" v-if="scope.row.projectOver">
+          <el-button v-if="scope.row.isFinish" type="primary" icon="el-icon-s-flag" round size="mini" @click="handleTest(scope.row.tecStageId)">测试结果</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="阶段状态操作" width="106">
+        <template slot-scope="scope" v-if="scope.row.projectOver">
+          <el-button v-if="scope.row.isInit" type="primary" icon="el-icon-caret-right" round size="mini" @click="handleReceive(scope.row.tecStageId)">领取</el-button>
+          <el-button v-else-if="scope.row.isDev"  type="success" icon="el-icon-finished" round size="mini" @click="handleFinish(scope.row.tecStageId)">完成</el-button>
+          <el-button v-else-if="scope.row.isTest" type="info" :disabled="true" icon="el-icon-refresh-right" round size="mini">测试中</el-button>
+          <el-button v-else-if="scope.row.isOver" type="success" :disabled="true" icon="el-icon-check" round size="mini">已结束</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="50">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditPhaseDialog(scope.row.tecStageId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteProjectPhase(scope.row.tecStageId)"></el-button>
+          <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteProjectPhase(scope.row.tecStageId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -76,18 +93,21 @@
       :total="this.$store.state.projectPhaseListTotalCount"
       @next-click="getNextPage" @prev-click="getPrevPage" @current-change="getCurrentPage">
     </el-pagination>
-    <add-project-phase :stageTestStatus="stageTestStatus" :stageStatus="stageStatus"></add-project-phase>
+    <add-project-phase></add-project-phase>
     <edit-project-phase :stageTestStatus="stageTestStatus" :stageStatus="stageStatus"></edit-project-phase>
+    <test-Dialog :stageTestStatus="stageTestStatus" :stageStatus="stageStatus"></test-Dialog>
   </div>
 </template>
 
 <script>
 import addDialog from '@/views/AppMain/MainModules/ProjectPhaseList/component/addPhase.vue'
 import editDialog from '@/views/AppMain/MainModules/ProjectPhaseList/component/editPhase.vue'
+import testDialog from '@/views/AppMain/MainModules/ProjectPhaseList/component/testDialog.vue'
 export default {
   components: {
     'add-project-phase': addDialog,
-    'edit-project-phase': editDialog
+    'edit-project-phase': editDialog,
+    'test-Dialog': testDialog
   },
   data () {
     return {
@@ -97,9 +117,6 @@ export default {
       }, {
         StatusId: 1,
         StatusName: '通过'
-      }, {
-        StatusId: 2,
-        StatusName: '有BUG'
       }],
       stageStatus: [{
         StatusId: 0,
@@ -111,7 +128,16 @@ export default {
         StatusId: 2,
         StatusName: '已完成'
       }],
-      projectPhaseSearchForm: {}
+      projectPhaseSearchForm: {
+        tecStageName: '',
+        tecProjectName: '',
+        principalName: '',
+        devPrincipalName: '',
+        tecStageStatus: null,
+        tecStageTestStatus: null,
+        receiveDate: '',
+        estimatedDate: ''
+      }
     }
   },
   created () {
@@ -120,27 +146,59 @@ export default {
     })
   },
   methods: {
-    handleSelectionChange (val) {
-      this.multipleSelection = val
+    handleTest (id) {
+      console.log(id)
+      this.$store.commit('openTestProjectPhase', id)
     },
-    deleteMultipleProjectPhase () {
-      let idsArr = []
-      for (let item of this.multipleSelection) {
-        idsArr.push(item.tecStageId)
-      }
-      let ids = idsArr.toString()
-      this.$store.commit('deleteMultipleProjectPhase', ids)
+    handleReceive (id) {
+      let ids = id.toString()
+      this.$confirm('确认领取该阶段任务吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('receiveProjectPhase', ids)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消领取'
+        })
+      })
+    },
+    handleFinish (id) {
+      this.$confirm('确认完成该阶段任务吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('finishProjectPhase', id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消完成'
+        })
+      })
     },
     deleteProjectPhase (id) {
-      this.$store.commit('deleteProjectPhase', id)
+      this.$confirm('此操作将永久删除该阶段, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('deleteProjectPhase', id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     },
     openEditPhaseDialog (id) {
       this.$store.commit('openEditProjectPhase', id)
     },
     openAddPhaseDialog () {
       this.$store.commit('openAddProjectPhase')
-      this.$store.commit('getAllMember')
-      this.$store.commit('getProjectsList')
+      this.$store.commit('getAllProjectsList')
     },
     resetSearch (formName) {
       this.$refs[formName].resetFields()
@@ -149,24 +207,15 @@ export default {
       })
     },
     searchProjectPhase () {
-      for (let key in this.projectPhaseSearchForm) {
-        if (this.projectPhaseSearchForm[key] === '') {
-          delete this.projectPhaseSearchForm[key]
+      let addForm = { ...this.projectPhaseSearchForm }
+      for (let key in addForm) {
+        if (addForm[key] === '') {
+          delete addForm[key]
         }
-        if (this.projectPhaseSearchForm[key] === null) {
-          delete this.projectPhaseSearchForm[key]
+        if (addForm[key] === null) {
+          delete addForm[key]
         }
       }
-      // this.$store.commit('dateKeyClear', {
-      //   mDate: this.projectPhaseSearchForm.receiveDate,
-      //   sDateStart: this.projectPhaseSearchForm.receiveDateStart,
-      //   sDateEnd: this.projectPhaseSearchForm.receiveDateEnd
-      // })
-      // this.$store.commit('dateKeyClear', {
-      //   mDate: this.projectPhaseSearchForm.estimatedDate,
-      //   sDateStart: this.projectPhaseSearchForm.estimatedStart,
-      //   sDateEnd: this.projectPhaseSearchForm.estimatedEnd
-      // })
       function dateKeyClear (formName, mDate, sDateStart, sDateEnd) {
         if (formName[mDate]) {
           formName[sDateStart] = formName[mDate][0]
@@ -177,23 +226,24 @@ export default {
           delete formName[sDateEnd]
         }
       }
-      dateKeyClear(this.projectPhaseSearchForm, 'receiveDate', 'receiveDateStart', 'receiveDateEnd')
-      dateKeyClear(this.projectPhaseSearchForm, 'estimatedDate', 'estimatedStart', 'estimatedEnd')
-      this.$store.commit('searchProjectPhase', this.projectPhaseSearchForm)
+      dateKeyClear(addForm, 'receiveDate', 'receiveDateStart', 'receiveDateEnd')
+      dateKeyClear(addForm, 'estimatedDate', 'estimatedStart', 'estimatedEnd')
+      console.log(addForm)
+      this.$store.commit('searchProjectPhase', addForm)
     },
     getNextPage () {
-      this.$store.commit('getProductList', {
+      this.$store.commit('getProjectPhaseList', {
         currentPage: ++this.currentPage
       })
     },
     getPrevPage () {
-      this.$store.commit('getProductList', {
+      this.$store.commit('getProjectPhaseList', {
         currentPage: --this.currentPage
       })
     },
     getCurrentPage (val) {
       this.currentPage = val
-      this.$store.commit('getProductList', {
+      this.$store.commit('getProjectPhaseList', {
         currentPage: this.currentPage
       })
     }
@@ -204,6 +254,22 @@ export default {
 <style lang="scss" scoped>
   .project-phase-container{
     position: relative;
+    .test{
+      color: #F56C6C;
+      font-weight: bold;
+    }
+    .isOver{
+      color: #67C23A;
+      font-weight: bold;
+    }
+    .isDev{
+      color: #409EFF;
+      font-weight: bold;
+    }
+    .isInit{
+      color: #F56C6C;
+      font-weight: bold;
+    }
     .el-table{
       margin-top: 10px;
     }

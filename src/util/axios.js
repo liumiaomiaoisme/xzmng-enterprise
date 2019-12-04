@@ -14,10 +14,10 @@ axios.interceptors.request.use((config) => {
     // config.data = qs.stringify(config.data)
     config.headers['Content-Type'] = 'application/json'// 配置请求头
   }
-  // if (config.method === 'get') {
-  //   config.data = qs.stringify(config.data)
-  //   config.headers['Content-Type'] = 'application/json'
-  // }
+  if (config.method === 'get') {
+    // config.data = qs.stringify(config.data)
+    config.headers['Content-Type'] = 'application/json'
+  }
   return config
 }, (error) => {
   console.log('错误的传参')

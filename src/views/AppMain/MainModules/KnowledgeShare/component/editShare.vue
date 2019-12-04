@@ -4,9 +4,6 @@
       <el-form-item label="分享标题" :label-width="formLabelWidth" prop="tecShareTitle">
         <el-input v-model="addShareForm.tecShareTitle" autocomplete="off" placeholder="请输入分享标题"></el-input>
       </el-form-item>
-      <el-form-item label="分享标签" :label-width="formLabelWidth" prop="tecShareLabel">
-        <el-input v-model="addShareForm.tecShareLabel" autocomplete="off" placeholder="请输入分享标签"></el-input>
-      </el-form-item>
       <el-form-item label="分享类型" :label-width="formLabelWidth" prop="tecShareType" class="type-item">
         <el-select v-model="addShareForm.tecShareType" placeholder="请选择分享类型">
           <el-option :label="item.tyName" :value="item.tyId" v-for="item in this.$store.state.shareTypeDate" :key="item.tyId"></el-option>
@@ -18,6 +15,12 @@
           <el-option label='发布' :value="1"></el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="分享标签" :label-width="formLabelWidth" prop="tecShareLabel" class="label-input">
+        <el-select size="medium" v-model="addShareForm.tecShareLabel" multiple :multiple-limit="5" filterable allow-create placeholder="请选择或创建分享标签">
+          <el-option v-for="item in ShareLabelOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <span class="label-tip">分享标签最多可接受5个</span>
       <el-form-item  prop="tecShareContent" class="editor-item">
         <quill-editor
           v-model="addShareForm.tecShareContent"
@@ -31,7 +34,14 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="closeDialog" size="small">取 消</el-button>
+      <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
+        <p>取消将会丢失已编辑的内容，确定取消吗？</p>
+        <div style="text-align: right; margin: 0">
+          <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
+          <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
+        </div>
+        <el-button slot="reference" size="small">取 消</el-button>
+      </el-popover>
       <el-button type="primary" @click="editShare" size="small">确 定</el-button>
     </div>
    </el-dialog>
@@ -65,6 +75,17 @@ export default {
   },
   data () {
     return {
+      ShareLabelOptions: [{
+        value: 'vue',
+        label: 'vue'
+      }, {
+        value: 'java',
+        label: 'java'
+      }, {
+        value: 'python',
+        label: 'python'
+      }],
+      confirmVisible: false,
       ShareContent: {},
       formLabelWidth: '90px',
       rules: {
@@ -108,20 +129,26 @@ export default {
     onEditorFocus () {}, // 获得焦点事件
     onEditorChange () {},
     closeDialog () {
+      this.confirmVisible = false
       this.$store.commit('closeEditShare')
       this.$refs['addShareForm'].resetFields()
     },
     editShare () {
       this.$refs['addShareForm'].validate((valid) => {
         if (valid) {
-          console.log(this.addShareForm)
-          this.$axios.fetchPost('/api/share/update', this.addShareForm)
+          let shareForm = { ...this.addShareForm }
+          shareForm.tecShareLabel = shareForm.tecShareLabel.toString()
+          this.$axios.fetchPost('/api/share/update', shareForm)
             .then(res => {
               if (res.data.statuscode === 200) {
                 this.$store.commit('getShareList', {
                   currentPage: 1
                 })
                 this.closeDialog()
+                this.$message({
+                  type: 'success',
+                  message: '编辑分享成功!'
+                })
               }
             })
             .catch(err => {

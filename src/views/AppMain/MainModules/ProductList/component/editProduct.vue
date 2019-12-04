@@ -1,27 +1,51 @@
 <template>
-   <el-dialog title="编辑产品" :visible.sync="this.$store.state.editProductVisible" class="product-dialog-container" :before-close="maskFake">
-     <el-form :model="addProductForm" status-icon ref="addProductForm" size="small" :rules="rules">
-        <el-form-item label="产品名称" :label-width="formLabelWidth" prop="tecProductName">
-          <el-input v-model="addProductForm.tecProductName" autocomplete="off" placeholder="请输入产品名称"></el-input>
-        </el-form-item>
-        <el-form-item label="产品简要" :label-width="formLabelWidth" prop="tecProductDesc">
-          <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入产品简要" v-model="addProductForm.tecProductDesc" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="产品调研总结" :label-width="formLabelWidth" prop="tecProductResearchSummary">
-          <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入产品调研总结" v-model="addProductForm.tecProductResearchSummary" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="产品类型" :label-width="formLabelWidth" prop="tecProductType">
-          <el-select v-model="addProductForm.tecProductType" placeholder="请选择产品类型">
-            <el-option :label="item.productTypeName" :value="item.productId" v-for="item in this.$store.state.ProductTypeList" :key="item.productId"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="产品负责人" :label-width="formLabelWidth" prop="tecProductPrincipal">
-          <el-select v-model="addProductForm.tecProductPrincipal" placeholder="请选择产品负责人">
-            <el-option :label="item.empName" :value="item.empId" v-for="item in this.$store.state.staffList" :key="item.empId"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="UI 参与人" :label-width="formLabelWidth" prop="ui">
-          <el-select v-model="addProductForm.ui" multiple placeholder="请选择UI 参与人">
+  <el-dialog title="编辑产品" :visible.sync="this.$store.state.editProductVisible" class="product-dialog-container" :before-close="maskFake">
+    <el-form :model="addProductForm" status-icon ref="addProductForm" size="small" :rules="rules">
+      <el-row>
+        <el-col :span="15" class="part15-input-con">
+          <el-form-item label="产品名称" :label-width="formLabelWidth" prop="tecProductName">
+            <el-input v-model="addProductForm.tecProductName" autocomplete="off" placeholder="请输入产品名称"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="9" class="part9-input-con">
+          <el-form-item label="预计完成天数" :label-width="formLabelWidth" prop="tecProductCompleteDays">
+            <el-input type="number" v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计天数"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="12" class="short-input-con">
+          <el-form-item label="产品审批人" :label-width="formLabelWidth" prop="tecProductCheckMember">
+            <el-select v-model="addProductForm.tecProductCheckMember" placeholder="请选择产品审批人">
+              <el-option :label="item.posName + '--' + item.empName" :value="item.empId" v-for="item in this.$store.state.ProductReviewerList" :key="item.empId"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="产品类型" :label-width="formLabelWidth" prop="tecProductType">
+            <el-select v-model="addProductForm.tecProductType" placeholder="请选择产品类型">
+              <el-option :label="item.productTypeName" :value="item.productId" v-for="item in this.$store.state.ProductTypeList" :key="item.productId"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12" class="short-input-con">
+          <el-form-item label="产品负责人" :label-width="formLabelWidth" prop="tecProductPrincipal">
+            <el-select v-model="addProductForm.tecProductPrincipal" placeholder="请选择产品负责人">
+              <el-option :label="item.empName" :value="item.empId" v-for="item in this.$store.state.staffList"
+                         :key="item.empId"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="产品发布日期" :label-width="formLabelWidth" prop="tecProductPublishDate">
+            <el-date-picker
+              v-model="addProductForm.tecProductPublishDate"
+              type="datetime"
+              format="yyyy-MM-dd HH:mm:ss"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="选择产品发布日期">
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-form-item label="UI 参与人" :label-width="formLabelWidth" prop="ui">
+        <el-select v-model="addProductForm.ui" multiple placeholder="请选择UI 参与人">
             <el-option
               v-for="item in this.$store.state.staffList" :key="item.empId" :label="item.empName" :value="item.empId">
             </el-option>
@@ -41,52 +65,51 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="预计完成天数" :label-width="formLabelWidth" prop="tecProductCompleteDays">
-          <el-input type="number" v-model.number="addProductForm.tecProductCompleteDays" autocomplete="off" placeholder="请输入预计完成天数"></el-input>
-        </el-form-item>
-        <el-form-item label="产品发布日期" :label-width="formLabelWidth" prop="tecProductPublishDate">
-          <el-date-picker
-            v-model="addProductForm.tecProductPublishDate"
-            type="datetime"
-            format="yyyy-MM-dd hh:mm:ss"
-            value-format="yyyy-MM-dd hh:mm:ss"
-            placeholder="选择产品发布日期">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="产品审批人" :label-width="formLabelWidth" prop="tecProductCheckMember">
-          <el-select v-model="addProductForm.tecProductCheckMember" placeholder="请选择产品审批人">
-            <el-option :label="item.posName + '--' + item.empName" :value="item.empId" v-for="item in this.$store.state.ProductReviewerList" :key="item.empId"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="产品审核意见" :label-width="formLabelWidth" prop="tecProductAuditmind">
-          <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入产品审核意见" v-model="addProductForm.tecProductAuditmind" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="产品附件" :label-width="formLabelWidth" prop="tecProductAnnex">
-          <el-upload
-            class="avatar-uploader" name="upload-file"
-            action="http://47.100.56.42:9876/upload"
-            :show-file-list="false"
-            enctype="multipart/form-data"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="addProductForm.tecProductAnnex" :src="addProductForm.tecProductAnnex" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-     <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog" size="small">取 消</el-button>
-        <el-button type="primary" @click="editProduct" size="small">确 定</el-button>
-      </div>
-    </el-dialog>
+      <el-form-item label="产品简要" :label-width="formLabelWidth" prop="tecProductDesc">
+        <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入产品简要" v-model="addProductForm.tecProductDesc" maxlength="50" show-word-limit></el-input>
+      </el-form-item>
+      <el-form-item label="产品调研总结" :label-width="formLabelWidth" prop="tecProductResearchSummary">
+        <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入产品调研总结" v-model="addProductForm.tecProductResearchSummary" maxlength="50" show-word-limit></el-input>
+      </el-form-item>
+      <el-form-item label="产品附件" :label-width="formLabelWidth" prop="tecProductAnnex" class="product-annex">
+        <el-upload
+          class="upload-demo" name="upload-file"
+          action="http://47.100.56.42:9876/upload"
+          :on-remove="handleRemove"
+          :on-success="handleSuccess"
+          :file-list="FileLists"
+          :on-exceed="handleExceed"
+          :before-upload="beforeUpload"
+          :limit='limitFileNumber'
+          list-type="picture">
+          <el-button size="small" type="primary">点击上传</el-button>
+          <div slot="tip" class="el-upload__tip">最多上传3个文件,仅支持JPG、JPEG、PNG、GIF格式，且每个不超过2M</div>
+        </el-upload>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
+        <p>取消将会丢失已编辑的内容，确定取消吗？</p>
+        <div style="text-align: right; margin: 0">
+          <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
+          <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
+        </div>
+        <el-button slot="reference" size="small">取 消</el-button>
+      </el-popover>
+      <el-button type="primary" @click="editProduct" size="small">确 定</el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <script>
 export default {
   data () {
     return {
+      uploadURl: 'http://47.100.56.42:9876',
+      fileList: [],
+      limitFileNumber: 3,
+      confirmVisible: false,
       autosize: false,
-      relativePath: '',
       formLabelWidth: '126px',
       rules: {
         tecProductName: [
@@ -111,9 +134,6 @@ export default {
         tecProductCheckMember: [
           { required: true, message: '请选择产品审批人', trigger: 'blur' }
         ],
-        tecProductAuditmind: [
-          { required: true, message: '请输入产品审核意见', trigger: 'blur' }
-        ],
         tecProductResearchSummary: [
           { required: true, message: '请输入产品调研总结', trigger: 'blur' }
         ],
@@ -135,11 +155,15 @@ export default {
   computed: {
     addProductForm () {
       return this.$store.state.editProductForm
+    },
+    FileLists () {
+      return this.$store.state.editProductForm.getfileList
     }
   },
   methods: {
     maskFake () {},
     closeDialog () {
+      this.confirmVisible = false
       this.$store.commit('closeEditProduct')
       this.$refs['addProductForm'].resetFields()
     },
@@ -150,15 +174,12 @@ export default {
           addForm.ui = addForm.uiId
           addForm.dev = addForm.devId
           addForm.test = addForm.testId
-          // addForm.empId = addForm.empId.toString()
-          if (addForm.tecProductAnnex.indexOf('http://47.100.56.42:9876') === -1) {
-            addForm.tecProductAnnex = 'http://47.100.56.42:9876' + this.relativePath
-          }
           delete addForm.tecProductCreateDate
           delete addForm.uiId
           delete addForm.devId
           delete addForm.testId
           delete addForm.tecProductCheckType
+          delete addForm.tecProductCheckDate
           console.log(addForm)
           this.$axios.fetchPost('/api/product/update', addForm)
             .then(res => {
@@ -179,21 +200,47 @@ export default {
         }
       })
     },
-    handleAvatarSuccess (res, file) {
-      this.addProjectForm.tecProductAnnex = URL.createObjectURL(file.raw)
-      this.relativePath = res.relativePath
+    handleSuccess (res, file, fileList) {
+      this.fileList.length = 0
+      for (let i of fileList) {
+        if (i.url.indexOf('http://47.100.56.42:9876') !== -1) {
+          this.fileList.push(i.url)
+        } else {
+          this.fileList.push(this.uploadURl + i.response.relativePath)
+        }
+      }
+      this.addProductForm.tecProductAnnex = this.fileList.toString()
     },
-    beforeAvatarUpload (file) {
-      const isJPG = file.type === 'image/jpeg' || 'image/jpg' || 'image/gif' || 'image/png'
+    handleRemove (file, fileList) {
+      this.fileList.length = 0
+      for (let i of fileList) {
+        if (i.url.indexOf('http://47.100.56.42:9876') !== -1) {
+          this.fileList.push(i.url)
+        } else {
+          this.fileList.push(this.uploadURl + i.response.relativePath)
+        }
+      }
+      this.addProductForm.tecProductAnnex = this.fileList.toString()
+    },
+    handleExceed () {
+      this.$message({
+        type: 'warning',
+        message: '最多上传3个文件'
+      })
+    },
+    beforeUpload (file) {
+      const isJPG = file.type === 'image/jpg'
+      const isJPEG = file.type === 'image/jpeg'
+      const isPNG = file.type === 'image/png'
+      const isGIF = file.type === 'image/gif'
       const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!isJPG) {
-        this.$message.error('上传头像图片仅支持JPG、JPEG、PNG、GIF 格式!')
+      if (!isJPG && !isJPEG && !isPNG && !isGIF) {
+        this.$message.error('上传附件图片仅支持JPG、JPEG、PNG、GIF格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error('上传附件图片大小不能超过 2MB!')
       }
-      return isJPG && isLt2M
+      return (isJPG || isJPEG || isGIF || isPNG) && isLt2M
     }
   }
 }

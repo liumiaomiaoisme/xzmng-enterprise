@@ -67,7 +67,6 @@
 </template>
 
 <script>
-import { throttle } from '@/util/utils.js'
 export default {
   props: ['handler'],
   data () {
@@ -114,7 +113,8 @@ export default {
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
       },
-      timer: null
+      timer: null,
+      lastTime: 0
     }
   },
   computed: {
@@ -142,8 +142,10 @@ export default {
       let s = newTime.getSeconds().toString().padStart(2, '0')
       return `${y}-${mo}-${d} ${h}:${mi}:${s}`
     },
-    addForm: throttle(function () {
-      console.log(this)
+    addForm () {
+      this.$throttle.throttle.apply(this, [this.add])
+    },
+    add () {
       this.$refs['addTeamForm'].validate((valid) => {
         if (valid) {
           let addForm = {
@@ -179,7 +181,7 @@ export default {
           return false
         }
       })
-    }),
+    },
     getAllMenber () {
       this.$axios.fetchGet('api/emp/tecEmp')
         .then(res => {

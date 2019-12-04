@@ -27,6 +27,7 @@ export default {
       menuGroup: [
         { itemName: '项目列表', itemRouter: '/TechHome/ProjectsList', itemIcon: 'el-icon-s-order' },
         { itemName: '需求列表', itemRouter: '/TechHome/RequirementsList', itemIcon: 'el-icon-s-opportunity' },
+        { itemName: '销售需求列表', itemRouter: '/TechHome/SalesDemandsList', itemIcon: 'el-icon-s-shop' },
         { itemName: '组管理', itemRouter: '/TechHome/TeamManagement', itemIcon: 'el-icon-s-custom' },
         { itemName: '产品列表', itemRouter: '/TechHome/ProductsList', itemIcon: 'el-icon-s-flag' },
         { itemName: '会议列表', itemRouter: '/TechHome/MeetingList', itemIcon: 'el-icon-s-management' },

@@ -115,14 +115,23 @@ export default {
         .then((res) => {
           this.loading = false
           if (res.data.statuscode === 200) {
-            this.$store.commit('getUserInfo', this.loginForm.username)
             this.$store.commit('login', res.data.content.accessToken)
             this.$router.push({
               path: '/TechHome'
             })
+          } else if (res.data.statuscode === 400 && res.data.msg === '用户名或密码错误') {
+            this.$message({
+              type: 'error',
+              message: '用户名或密码错误'
+            })
           }
         })
         .catch((error) => {
+          this.loading = false
+          this.$message({
+            type: 'error',
+            message: '登录失败，请稍微重试！'
+          })
           console.log(error)
         })
     }
@@ -157,18 +166,20 @@ export default {
         display: inline-block;
         width: 40px;
         text-align: center;
-        color:#409EFF;
         font-size: 20px;
         vertical-align: middle;
         position:absolute;
+        color:#409eff;
         left:0;
         top:10px;
         z-index: 2;
         &.el-icon-view{
-          color:#889aa4;
+          color:#C0C4CC;
           left:initial;
           right: 20px;
           cursor: pointer;
+          font-size: 15px;
+          top:13px;
         }
       }
       .el-input__inner{

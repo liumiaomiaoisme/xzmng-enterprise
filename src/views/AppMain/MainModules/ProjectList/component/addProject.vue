@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加项目" :visible.sync="this.$store.state.addDialogVisible" class="project-dialog-container" :before-close="maskFake">
+   <el-dialog title="添加项目" :visible.sync="this.$store.state.addDialogVisible" class="project-dialog-container" :close-on-click-modal="false">
       <el-form :model="addProjectForm" status-icon ref="addProjectForm" size="small" :rules="rules">
         <el-form-item label="项目名称" :label-width="formLabelWidth" prop="tecProjectName">
           <el-input v-model="addProjectForm.tecProjectName" autocomplete="off" placeholder="请输入项目名称"></el-input>
@@ -56,27 +56,20 @@
             <el-form-item label="项目版本" :label-width="formLabelWidth" prop="tecProjectVersion">
               <el-input v-model="addProjectForm.tecProjectVersion" autocomplete="off" placeholder="请输入项目版本"></el-input>
             </el-form-item>
-            <el-form-item label="项目状态" :label-width="formLabelWidth" prop="tecProjectStatus">
-              <el-select v-model="addProjectForm.tecProjectStatus" placeholder="请选择项目状态">
-                <el-option label="未开始" value="0"></el-option>
-                <el-option label="进行中" value="1"></el-option>
-                <el-option label="已结束" value="2"></el-option>
-              </el-select>
+            <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
+              <el-upload
+                class="avatar-uploader" name="upload-file"
+                action="http://47.100.56.42:9876/upload"
+                :show-file-list="false"
+                enctype="multipart/form-data"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+                <img v-if="addProjectForm.tecProjectLogourl" :src="addProjectForm.tecProjectLogourl" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
-          <el-upload
-            class="avatar-uploader" name="upload-file"
-            action="http://47.100.56.42:9876/upload"
-            :show-file-list="false"
-            enctype="multipart/form-data"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="addProjectForm.tecProjectLogourl" :src="addProjectForm.tecProjectLogourl" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
@@ -95,6 +88,17 @@
 <script>
 export default {
   data () {
+    let validate = (rule, value, callback) => {
+      this.$axios.fetchGet('/api/project/checkName', {
+        tecProjectName: value
+      }).then(res => {
+        if (res && res.data.statuscode === 400 && res.data.msg === '对不起，该项目名称已存在！') {
+          callback(new Error())
+        } else {
+          callback()
+        }
+      })
+    }
     return {
       confirmVisible: false,
       autosize: false,
@@ -107,7 +111,6 @@ export default {
         tecProjectCycle: null,
         tecProjectStartDate: '',
         tecProjectEstimatedEndDate: '',
-        tecProjectStatus: null,
         tecProjectVersion: '',
         tecProjectPublishDate: '',
         tecProjectCapacity: null
@@ -118,7 +121,8 @@ export default {
       groupType: [],
       rules: {
         tecProjectName: [
-          { required: true, message: '请输入项目名称', trigger: 'blur' }
+          { required: true, message: '请输入项目名称', trigger: 'blur' },
+          { validator: validate, message: '对不起，该项目名称已存在，请重新输入！', trigger: 'blur' }
         ],
         tecProjectPrincipal: [
           { required: true, message: '请选择项目负责人', trigger: 'change' }
@@ -132,9 +136,6 @@ export default {
         ],
         tecProjectEstimatedEndDate: [
           { type: 'date', required: true, message: '请选择项目预计结束日期', trigger: 'blur' }
-        ],
-        tecProjectStatus: [
-          { required: true, message: '请输入项目状态', trigger: 'blur' }
         ],
         tecProjectDesc: [
           { required: true, message: '请输入项目简要', trigger: 'blur' }
@@ -151,14 +152,16 @@ export default {
         ],
         empId: [
           { required: true, message: '请选择成员', trigger: 'blur' }
+        ],
+        tecProjectLogourl: [
+          { required: true, message: '请上传logo', trigger: 'blur' }
         ]
       },
-      timer: null
+      lastTime: 0
     }
   },
   created () {
     this.$store.commit('getAllMember')
-    this.$store.commit('getProjectStageType')
   },
   computed: {
     EstimatedStartDate () {
@@ -184,7 +187,6 @@ export default {
     }
   },
   methods: {
-    maskFake () {},
     closeDialog () {
       this.confirmVisible = false
       this.$store.commit('closeAddDialog')
@@ -198,7 +200,12 @@ export default {
       return `${y}-${mo}-${d}`
     },
     addProject () {
+      this.$throttle.throttle.apply(this, [this.add])
+    },
+    add () {
+      console.log(1)
       this.$refs['addProjectForm'].validate((valid) => {
+        console.log(valid)
         if (valid) {
           let addForm = { ...this.addProjectForm }
           addForm.tecProjectEstimatedEndDate = this.getFormatDate(addForm.tecProjectEstimatedEndDate)
@@ -206,25 +213,23 @@ export default {
           addForm.tecProjectStartDate = this.getFormatDate(addForm.tecProjectStartDate)
           addForm.empId = addForm.empId.toString()
           addForm.tecProjectLogourl = 'http://47.100.56.42:9876' + this.relativePath
-          clearTimeout(this.timer)
-          this.timer = setTimeout(() => {
-            this.$axios.fetchPost('/api/project/add', addForm)
-              .then(res => {
-                if (res.data.statuscode === 200) {
-                  this.$store.commit('getProjectList', {
-                    currentPage: 1
-                  })
-                  this.closeDialog()
-                  this.$message({
-                    type: 'success',
-                    message: '添加成功!'
-                  })
-                }
-              })
-              .catch(err => {
-                console.log(err)
-              })
-          }, 1000)
+          this.$axios.fetchPost('/api/project/add', addForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.statuscode === 200) {
+                this.$store.commit('getProjectList', {
+                  currentPage: 1
+                })
+                this.closeDialog()
+                this.$message({
+                  type: 'success',
+                  message: '添加成功!'
+                })
+              }
+            })
+            .catch(err => {
+              console.log(err)
+            })
         } else {
           console.log('error submit!!')
           return false
@@ -262,6 +267,9 @@ export default {
     box-sizing: border-box;
     min-width: 800px !important;
     width: 50%;
+    .el-dialog__headerbtn{
+      display: none!important;
+    }
     .short-input-con {
       .el-input,.el-date-picker,.textarea{
         width: 220px;
@@ -312,5 +320,9 @@ export default {
       }
     }
   }
-
+  .small-dialog .el-dialog{
+    min-width: 660px !important;
+    max-width: 660px !important;
+    width: 40%;
+  }
 </style>

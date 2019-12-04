@@ -3,7 +3,7 @@
     <el-header>
       <home-header></home-header>
     </el-header>
-    <el-container>
+    <el-container class="main-container">
       <el-aside class="no-select">
         <home-aside></home-aside>
       </el-aside>
@@ -44,28 +44,31 @@ export default {
       line-height: 40px;
       overflow: hidden;
     }
-    .el-main{
-      overflow-x: hidden;
-      .fade-transform-leave-active,
-      .fade-transform-enter-active {
-        transition: all .5s;
-      }
-      .fade-transform-enter {
-        opacity: 0;
-        transform: translateX(-30px);
-      }
-      .fade-transform-leave-to {
-        opacity: 0;
-        transform: translateX(30px);
-      }
-      .main-header.el-row{
-          background-color: #f1f1f1;
-      }
-    }
-    .el-aside{
-      background-color: #545c64;
+    .main-container{
       height:100%;
-      width:180px!important;
+      .el-main{
+        overflow-x: hidden;
+        .fade-transform-leave-active,
+        .fade-transform-enter-active {
+          transition: all .5s;
+        }
+        .fade-transform-enter {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        .fade-transform-leave-to {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+        .main-header.el-row{
+            background-color: #f1f1f1;
+        }
+      }
+      .el-aside{
+        background-color: #545c64;
+        height:100%;
+        width:180px!important;
+      }
     }
   }
 </style>

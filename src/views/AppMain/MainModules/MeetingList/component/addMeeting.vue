@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加会议" :visible.sync="this.$store.state.addMeetingVisible" :before-close="MaskCantClose" class="meeting-dialog-container">
+   <el-dialog v-loading.fullscreen.lock="loading" title="添加会议" :visible.sync="this.$store.state.addMeetingVisible" :before-close="MaskCantClose" class="meeting-dialog-container small-dialog">
       <el-form :model="addMeetingForm" status-icon ref="addMeetingForm" size="small" :rules="rules">
         <el-form-item label="会议名称" :label-width="formLabelWidth" prop="tecMeetingName">
           <el-input v-model="addMeetingForm.tecMeetingName" autocomplete="off" placeholder="请输入会议名称"></el-input>
@@ -18,8 +18,8 @@
           <el-date-picker
             v-model="addMeetingForm.tecMeetingStartDate"
             type="datetime"
-            format="yyyy-MM-dd hh:mm:ss"
-            value-format="yyyy-MM-dd hh:mm:ss"
+            format="yyyy-MM-dd HH:mm:ss"
+            value-format="yyyy-MM-dd HH:mm:ss"
             :picker-options="MeetingStartDate"
             placeholder="选择会议开始时间">
           </el-date-picker>
@@ -28,23 +28,14 @@
           <el-date-picker
             v-model="addMeetingForm.tecMeetingEndDate"
             type="datetime"
-            format="yyyy-MM-dd hh:mm:ss"
-            value-format="yyyy-MM-dd hh:mm:ss"
+            format="yyyy-MM-dd HH:mm:ss"
+            value-format="yyyy-MM-dd HH:mm:ss"
             :picker-options="MeetingEndDate"
             placeholder="选择会议结束时间">
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="是否解决了问题" :label-width="formLabelWidth" prop="tecMeetingSolveProblem">
-          <el-select v-model="addMeetingForm.tecMeetingSolveProblem" placeholder="请选择是否解决了问题">
-            <el-option label="未解决" value="0"></el-option>
-            <el-option label="已解决" value="1"></el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item label="会议精神" :label-width="formLabelWidth" prop="tecMeetingSpirit">
           <el-input class="textarea" type="textarea" :autosize='autosize' placeholder="请输入会议精神" v-model="addMeetingForm.tecMeetingSpirit" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="会议总结" :label-width="formLabelWidth" prop="tecMeetingSummary">
-          <el-input class="textarea" type="textarea" :autosize='autosize' :rows="8" placeholder="请输入会议总结" v-model="addMeetingForm.tecMeetingSummary" maxlength="200" show-word-limit></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -69,12 +60,10 @@ export default {
       autosize: false,
       addMeetingForm: {
         tecMeetingName: '',
-        tecMeetingStartDate: '',
+        tecMeetingStartDate: this.$formatTime.formatTime(),
         tecMeetingEndDate: '',
         tecMeetingHost: null,
         tecMeetingSpirit: '',
-        tecMeetingSolveProblem: null,
-        tecMeetingSummary: '',
         empId: ''
       },
       formLabelWidth: '126px',
@@ -101,65 +90,83 @@ export default {
           { required: true, message: '请选择会议成员', trigger: 'blur' }
         ]
       },
-      timer: null
+      lastTime: 0,
+      loading: false
     }
   },
   computed: {
     MeetingStartDate () {
+      let range
+      if (this.addMeetingForm.tecMeetingEndDate) {
+        let time = this.addMeetingForm.tecMeetingEndDate.substr(11, 8)
+        range = '00:00:00 - ' + time
+      } else {
+        range = '00:00:00 - 23:59:59'
+      }
       return {
+        selectableRange: [range],
         disabledDate: (time) => {
           return time.getTime() > new Date(this.addMeetingForm.tecMeetingEndDate).getTime()
         }
       }
     },
     MeetingEndDate () {
+      let range
+      if (this.addMeetingForm.tecMeetingStartDate) {
+        let time = this.addMeetingForm.tecMeetingStartDate.substr(11, 8)
+        range = time + '- 23:59:59'
+      } else {
+        range = '00:00:00 - 23:59:59'
+      }
       return {
+        selectableRange: [range],
         disabledDate: (time) => {
-          return time.getTime() < new Date(this.addMeetingForm.tecMeetingStartDate).getTime()
+          return time.getTime() < new Date(this.addMeetingForm.tecMeetingStartDate).getTime() - 8.64e7
         }
       }
     }
   },
   methods: {
+    addMeeting () {
+      this.$throttle.throttle.apply(this, [this.add])
+    },
+    add () {
+      this.loading = true
+      this.$refs['addMeetingForm'].validate((valid) => {
+        if (valid) {
+          let addForm = { ...this.addMeetingForm }
+          addForm.empId = addForm.empId.toString()
+          this.$axios.fetchPost('/api/meeting/add', addForm)
+            .then(res => {
+              console.log(res)
+              if (res.data.statuscode === 200) {
+                this.loading = false
+                this.closeDialog()
+                this.$store.commit('getMeetingList', {
+                  currentPage: 1
+                })
+                this.$message({
+                  message: '添加成功',
+                  type: 'success'
+                })
+              }
+            })
+            .catch(err => {
+              console.log(err)
+              this.loading = false
+            })
+        } else {
+          this.loading = false
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
     MaskCantClose () {},
     closeDialog () {
       this.confirmVisible = false
       this.$store.commit('closeAddMeeting')
       this.$refs['addMeetingForm'].resetFields()
-    },
-    addMeeting () {
-      this.$refs['addMeetingForm'].validate((valid) => {
-        if (valid) {
-          let addForm = { ...this.addMeetingForm }
-          addForm.empId = addForm.empId.toString()
-          addForm.tecMeetingSolveProblem = parseInt(addForm.tecMeetingSolveProblem)
-          if (addForm.tecMeetingSummary === '') {
-            delete addForm.tecMeetingSummary
-          }
-          clearTimeout(this.timer)
-          this.timer = setTimeout(() => {
-            this.$axios.fetchPost('/api/meeting/add', addForm)
-              .then(res => {
-                if (res.data.statuscode === 200) {
-                  this.closeDialog()
-                  this.$store.commit('getMeetingList', {
-                    currentPage: 1
-                  })
-                  this.$message({
-                    message: '添加成功',
-                    type: 'success'
-                  })
-                }
-              })
-              .catch(err => {
-                console.log(err)
-              })
-          }, 1000)
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
     }
   }
 }

@@ -55,16 +55,7 @@
             <el-form-item label="项目版本" :label-width="formLabelWidth" prop="tecProjectVersion">
               <el-input v-model="addProjectForm.tecProjectVersion" autocomplete="off" placeholder="请输入项目版本"></el-input>
             </el-form-item>
-            <el-form-item label="项目状态" :label-width="formLabelWidth" prop="tecProjectStatus">
-              <el-select v-model="addProjectForm.tecProjectStatus" placeholder="请选择项目状态">
-                <el-option label="未开始" value="0"></el-option>
-                <el-option label="进行中" value="1"></el-option>
-                <el-option label="已结束" value="2"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
+            <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
           <el-upload
             class="avatar-uploader" name="upload-file"
             action="http://47.100.56.42:9876/upload"
@@ -76,6 +67,8 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
@@ -94,7 +87,23 @@
 <script>
 export default {
   data () {
+    let validate = (rule, value, callback) => {
+      if (value !== this.$store.state.checkName) {
+        this.$axios.fetchGet('/api/project/checkName', {
+          tecProjectName: value
+        }).then(res => {
+          if (res && res.data.statuscode === 400 && res.data.msg === '对不起，该项目名称已存在！') {
+            callback(new Error())
+          } else {
+            callback()
+          }
+        })
+      } else {
+        callback()
+      }
+    }
     return {
+      checkName: this.$store.state.checkName,
       confirmVisible: false,
       autosize: false,
       relativePath: '',
@@ -103,7 +112,8 @@ export default {
       groupType: [],
       rules: {
         tecProjectName: [
-          { required: true, message: '请输入项目名称', trigger: 'blur' }
+          { required: true, message: '请输入项目名称', trigger: 'blur' },
+          { validator: validate, message: '对不起，该项目名称已存在，请重新输入！', trigger: 'blur' }
         ],
         tecProjectPrincipal: [
           { required: true, message: '请选择项目负责人', trigger: 'change' }
@@ -117,9 +127,6 @@ export default {
         ],
         tecProjectEstimatedEndDate: [
           { type: 'date', required: true, message: '请选择项目预计结束日期', trigger: 'blur' }
-        ],
-        tecProjectStatus: [
-          { required: true, message: '请输入项目状态', trigger: 'blur' }
         ],
         tecProjectDesc: [
           { required: true, message: '请输入项目简要', trigger: 'blur' }
@@ -142,7 +149,6 @@ export default {
   },
   created () {
     this.$store.commit('getAllMember')
-    this.$store.commit('getProjectStageType')
   },
   computed: {
     addProjectForm () {

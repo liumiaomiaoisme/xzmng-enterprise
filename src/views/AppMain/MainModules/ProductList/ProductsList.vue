@@ -23,12 +23,12 @@
       </el-form-item>
       <el-form-item class="date-form" prop="createDate">
         <el-date-picker
-          v-model="productSearchForm.createDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="产品创建日期范围起" end-placeholder="产品创建日期范围止">
+          v-model="productSearchForm.createDate" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" type="daterange" range-separator="至" start-placeholder="产品创建日期范围起" end-placeholder="产品创建日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-form-item class="date-form" prop="publishDate">
         <el-date-picker
-          v-model="productSearchForm.publishDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
+          v-model="productSearchForm.publishDate" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" type="daterange" range-separator="至" start-placeholder="发布日期范围起" end-placeholder="发布日期日范围止">
         </el-date-picker>
       </el-form-item>
       <el-button type="primary" size="mini" icon="el-icon-search" @click="searchProduct" plain>查询</el-button>
@@ -53,20 +53,6 @@
            <span v-html="scope.row.tecProductCreateDate"></span>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProductCheckDate" label="产品审核时间" width="106">
-        <template slot-scope="scope">
-           <span v-html="scope.row.tecProductCheckDate"></span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="productCheckName" label="产品审核人" width="96"></el-table-column>
-      <el-table-column prop="tecProductAuditmind" label="产品审核意见">
-        <template slot-scope="scope">
-          <el-popover placement="top-start" title="产品审核意见" width="200" trigger="hover" :content="scope.row.tecProductAuditmind">
-            <el-button slot="reference" class="tips-btn">查看意见</el-button>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column prop="tecProductCheckType" label="产品审核状态"></el-table-column>
       <el-table-column prop="tecProductCompleteDays" label="产品预计完成天数"></el-table-column>
       <el-table-column prop="ui" label="产品UI 参与人">
         <template slot-scope="scope">
@@ -101,15 +87,34 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column prop="tecProductAnnex" label="附件">
+      <el-table-column prop="fileList" label="附件" width="180">
         <template slot-scope="scope">
-          <el-link :href="scope.row.tecProductAnnex" target="_blank">查看附件</el-link>
+          <el-image v-for="i in scope.row.fileList" :src="i" :key='i' :preview-src-list="scope.row.fileList"></el-image>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="96">
+      <el-table-column prop="productCheckName" label="产品审核人" width="96"></el-table-column>
+      <el-table-column prop="tecProductCheckDate" label="产品审核时间" width="106">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditProduct(scope.row.tecProductId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteProject(scope.row.tecProductId)"></el-button>
+           <span v-html="scope.row.tecProductCheckDate"></span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="tecProductAuditmind" label="产品审核意见">
+        <template slot-scope="scope">
+          <el-popover placement="top-start" title="产品审核意见" width="200" trigger="hover" :content="scope.row.tecProductAuditmind">
+            <el-button slot="reference" class="tips-btn">查看意见</el-button>
+          </el-popover>
+        </template>
+      </el-table-column>
+      <el-table-column prop="tecProductCheckType" label="产品审核状态"></el-table-column>
+      <el-table-column fixed="right" label="产品审核操作" width="120">
+        <template slot-scope="scope">
+          <el-button :disabled="scope.row.passed" type="primary" icon="el-icon-edit-outline" round size="mini" @click="openCheckProduct(scope.row.tecProductId)">审核</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="88">
+        <template slot-scope="scope">
+          <el-button type="primary" icon="el-icon-edit" circle size="mini" @click="openEditProduct(scope.row.tecProductId)"></el-button>
+          <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteProject(scope.row.tecProductId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -121,17 +126,27 @@
     </el-pagination>
     <add-product></add-product>
     <edit-product></edit-product>
+    <checkProduct></checkProduct>
   </div>
 </template>
 <script>
 import AddProduct from '@/views/AppMain/MainModules/ProductList/component/addProduct.vue'
 import EditProduct from '@/views/AppMain/MainModules/ProductList/component/editProduct.vue'
+import checkProduct from '@/views/AppMain/MainModules/ProductList/component/checkProduct.vue'
 export default {
   data () {
     return {
       currentPage: 1,
       multipleSelection: [],
-      productSearchForm: {},
+      productSearchForm: {
+        tecProductName: '',
+        principalName: '',
+        tecProductType: null,
+        checkName: '',
+        tecProductCheckType: null,
+        createDate: '',
+        publishDate: ''
+      },
       ProductCheckType: [{
         typeNumb: 0,
         typeName: '未审核'
@@ -151,6 +166,9 @@ export default {
     this.$store.commit('getProductType')
   },
   methods: {
+    openCheckProduct (id) {
+      this.$store.commit('openCheckProduct', id)
+    },
     openAddProductDialog () {
       this.$store.commit('openAddProduct')
     },
@@ -158,7 +176,18 @@ export default {
       this.$store.commit('openEditProduct', id)
     },
     deleteProject (id) {
-      this.$store.commit('deleteProduct', id)
+      this.$confirm('此操作将永久删除该产品, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('deleteProduct', id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     },
     getNextPage () {
       this.$store.commit('getProductList', {
@@ -199,7 +228,8 @@ export default {
   },
   components: {
     'add-product': AddProduct,
-    'edit-product': EditProduct
+    'edit-product': EditProduct,
+    checkProduct
   }
 }
 </script>
@@ -238,6 +268,12 @@ export default {
     }
     .el-table td, .el-table th {
       padding: 10px 0;
+    }
+    .el-image{
+      width: 50px;
+      height: 50px;
+      margin: 0 1px;
+      border: 1px solid #EBEEF5;
     }
   }
 </style>

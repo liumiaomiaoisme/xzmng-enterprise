@@ -13,12 +13,18 @@
           <el-option :label="item.tyName" :value="item.tyId" v-for="item in this.$store.state.shareTypeDate" :key="item.tyId"></el-option>
         </el-select>
       </el-form-item>
+      <el-form-item>
+        <el-select placeholder="请选择分享状态" v-model="shareSearchForm.tecShareStatus" clearable>
+          <el-option label="草稿" value='0'></el-option>
+          <el-option label="发布" value='1'></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item prop="tecShareLabel">
         <el-input  v-model="shareSearchForm.tecShareLabel" prefix-icon="el-icon-search" placeholder="请输入分享标签"></el-input>
       </el-form-item>
       <el-form-item class="date-form" prop="createDate">
         <el-date-picker
-          v-model="shareSearchForm.createDate" format="yyyy-MM-dd hh:mm:ss" value-format="yyyy-MM-dd hh:mm:ss" type="daterange" range-separator="至" start-placeholder="分享创建日期范围起" end-placeholder="分享创建日期范围止">
+          v-model="shareSearchForm.createDate" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" type="daterange" range-separator="至" start-placeholder="分享创建日期范围起" end-placeholder="分享创建日期范围止">
         </el-date-picker>
       </el-form-item>
       <el-button type="primary" size="mini" icon="el-icon-search" @click="searchShare" plain>查询</el-button>
@@ -41,10 +47,10 @@
       <el-table-column prop="tecShareStatus" label="分享的状态"></el-table-column>
       <el-table-column prop="tecShareViewsCount" label="分享的浏览次数"></el-table-column>
       <el-table-column prop="tecShareCreateDate" label="分享创建日期"></el-table-column>
-      <el-table-column fixed="right" label="操作" width="96">
+      <el-table-column fixed="right" label="操作" width="88">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditShare(scope.row.tecShareId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteShare(scope.row.tecShareId)"></el-button>
+          <el-button type="primary" icon="el-icon-edit" circle size="mini" @click="openEditShare(scope.row.tecShareId)"></el-button>
+          <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteShare(scope.row.tecShareId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -111,20 +117,10 @@ export default {
         searchForm.createDateEnd = searchForm.createDate[1]
       }
       if (searchForm.shareType) {
-        switch (searchForm.shareType) {
-          case 1:
-            searchForm.shareType = '前端'
-            break
-          case 2:
-            searchForm.shareType = '后端'
-            break
-          case 3:
-            searchForm.shareType = 'UI'
-            break
-          case 4:
-            searchForm.shareType = '测试'
-            break
-        }
+        searchForm.shareType = parseInt(searchForm.shareType)
+      }
+      if (searchForm.tecShareStatus) {
+        searchForm.tecShareStatus = parseInt(searchForm.tecShareStatus)
       }
       delete searchForm.createDate
       this.$store.commit('searchShare', searchForm)
@@ -136,7 +132,18 @@ export default {
       })
     },
     deleteShare (id) {
-      this.$store.commit('deleteShare', id)
+      this.$confirm('此操作将永久删除该分享, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('deleteShare', id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     }
   }
 
@@ -144,6 +151,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .share-container{
+  position: relative;
   .search-container{
     margin-bottom: 10px;
     .el-form-item{

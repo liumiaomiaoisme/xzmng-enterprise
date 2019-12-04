@@ -70,10 +70,10 @@
            <span v-html="scope.row.tecGroupExpiredDate"></span>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="120">
+      <el-table-column fixed="right" label="操作" width="88">
         <template slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" circle size="small" @click="openEditDialog(scope.row.tecGroupId)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small" @click="deleteTeam(scope.row.tecGroupId)"></el-button>
+          <el-button type="primary" icon="el-icon-edit" circle size="mini" @click="openEditDialog(scope.row.tecGroupId)"></el-button>
+          <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteTeam(scope.row.tecGroupId)"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -89,7 +89,6 @@
 </template>
 
 <script>
-
 import addDialog from '@/views/AppMain/MainModules/TeamManage/component/addTeam.vue'
 import editDialog from '@/views/AppMain/MainModules/TeamManage/component/editTeam.vue'
 export default {
@@ -273,7 +272,7 @@ export default {
       this.editDialogFormVisible = false
     },
     deleteTeam (id) {
-      this.$confirm('此操作将永久删除该项目, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除该小组, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

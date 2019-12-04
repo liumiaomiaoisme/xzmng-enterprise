@@ -15,9 +15,12 @@
           <el-option label='发布' :value="1"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="分享标签" :label-width="formLabelWidth" prop="tecShareLabel">
-        <el-input v-model="addShareForm.tecShareLabel" autocomplete="off" placeholder="请输入分享标签"></el-input>
+      <el-form-item label="分享标签" :label-width="formLabelWidth" prop="tecShareLabel" class="label-input">
+        <el-select size="medium" v-model="addShareForm.tecShareLabel" multiple :multiple-limit="5" filterable allow-create placeholder="请选择或创建分享标签">
+          <el-option v-for="item in ShareLabelOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        </el-select>
       </el-form-item>
+      <span class="label-tip">分享标签最多可接受5个</span>
       <el-form-item  prop="tecShareContent" class="editor-item">
         <quill-editor
           v-model="addShareForm.tecShareContent"
@@ -31,7 +34,14 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="closeDialog" size="small">取 消</el-button>
+      <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
+        <p>取消将会丢失已编辑的内容，确定取消吗？</p>
+        <div style="text-align: right; margin: 0">
+          <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
+          <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
+        </div>
+        <el-button slot="reference" size="small">取 消</el-button>
+      </el-popover>
       <el-button type="primary" @click="addShare" size="small">确 定</el-button>
     </div>
    </el-dialog>
@@ -65,7 +75,24 @@ export default {
   },
   data () {
     return {
-      addShareForm: {},
+      ShareLabelOptions: [{
+        value: 'vue',
+        label: 'vue'
+      }, {
+        value: 'java',
+        label: 'java'
+      }, {
+        value: 'python',
+        label: 'python'
+      }],
+      confirmVisible: false,
+      addShareForm: {
+        tecShareTitle: '',
+        tecShareType: null,
+        tecShareStatus: null,
+        tecShareLabel: '',
+        tecShareContent: ''
+      },
       formLabelWidth: '90px',
       rules: {
         tecShareTitle: [
@@ -94,7 +121,8 @@ export default {
           }
         }
       },
-      timer: null
+      timer: null,
+      lastTime: 0
     }
   },
   methods: {
@@ -104,27 +132,35 @@ export default {
     onEditorFocus () {}, // 获得焦点事件
     onEditorChange () {},
     closeDialog () {
+      this.confirmVisible = false
       this.$store.commit('closeAddShare')
       this.$refs['addShareForm'].resetFields()
     },
     addShare () {
+      this.$throttle.throttle.apply(this, [this.add])
+    },
+    add () {
+      // 添加的请求
       this.$refs['addShareForm'].validate((valid) => {
         if (valid) {
-          clearTimeout(this.timer)
-          this.timer = setTimeout(() => {
-            this.$axios.fetchPost('/api/share/add', this.addShareForm)
-              .then(res => {
-                if (res.data.statuscode === 200) {
-                  this.$store.commit('getShareList', {
-                    currentPage: 1
-                  })
-                  this.closeDialog()
-                }
-              })
-              .catch(err => {
-                console.log(err)
-              })
-          }, 1000)
+          let shareForm = { ...this.addShareForm }
+          shareForm.tecShareLabel = shareForm.tecShareLabel.toString()
+          this.$axios.fetchPost('/api/share/add', shareForm)
+            .then(res => {
+              if (res.data.statuscode === 200) {
+                this.$store.commit('getShareList', {
+                  currentPage: 1
+                })
+                this.closeDialog()
+                this.$message({
+                  type: 'success',
+                  message: '添加成功!'
+                })
+              }
+            })
+            .catch(err => {
+              console.log(err)
+            })
         } else {
           console.log('error submit!!')
           return false
@@ -159,6 +195,18 @@ export default {
           height: 400px;
         }
       }
+      .label-input{
+        width: 634px!important;
+        .el-select.el-select--medium {
+          width: 530px!important;
+          .el-input.el-input--medium{
+            width: 530px!important;
+          }
+        }
+      }
+      .label-tip{
+        color:#F56C6C
+      }
     }
     .el-dialog__body {
       padding: 10px 20px;
@@ -167,11 +215,6 @@ export default {
     }
     .el-dialog .el-form-item--small.el-form-item {
       display: inline-block;
-    }
-    .type-item{
-      .el-input {
-        width: 140px;
-      }
     }
   }
 
