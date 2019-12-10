@@ -6,7 +6,7 @@
       </el-form-item>
       <el-form-item label="所在项目" :label-width="formLabelWidth" prop="tecDemandProjectId">
         <el-select v-model="addRequirementForm.tecDemandProjectId" placeholder="请选择所在项目" :disabled="true">
-          <el-option :label="item.name" :value="item.id" v-for="item in this.$store.state.projectsForRequire" :key="'ProjectId'+item.id"></el-option>
+          <el-option :label="item.name" :value="item.id" v-for="(item,i) in this.$store.state.projectsForRequire" :key="'ProjectId'+i"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="反馈内容" :label-width="formLabelWidth" prop="tecDemandDevFeedback">

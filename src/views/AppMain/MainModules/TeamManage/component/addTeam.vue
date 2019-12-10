@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
+   <el-dialog v-loading.fullscreen.lock="loading" title="添加技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
       <el-form :model="form" status-icon :rules="rules" ref="addTeamForm">
         <el-form-item label="组名称" :label-width="formLabelWidth" prop="tecGroupName">
           <el-input v-model="form.tecGroupName" autocomplete="off" placeholder="请输入组名称"></el-input>
@@ -11,19 +11,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="组长" :label-width="formLabelWidth" prop="tecGroupLeader">
-          <el-select v-model="form.tecGroupLeader" placeholder="请选择组长">
-            <el-option :label="item.empName" :value="item.empId" v-for="item in staffList" :key="item.empId"></el-option>
+          <el-select v-model="form.tecGroupLeader" placeholder="请选择组长" clearable>
+            <el-option :label="item.empName" :value="item.empId" v-for="item in leaderList" :key="item.empId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="副组长" :label-width="formLabelWidth" prop="tecGroupDeputy">
-          <el-select v-model="form.tecGroupDeputy" placeholder="请选择副组长">
-            <el-option :label="item.empName" :value="item.empId" v-for="item in staffList" :key="item.empId"></el-option>
+          <el-select v-model="form.tecGroupDeputy" placeholder="请选择副组长" clearable>
+            <el-option :label="item.empName" :value="item.empId" v-for="item in deputyList" :key="item.empId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="组成员" :label-width="formLabelWidth" prop="memeberIds">
           <el-select v-model="form.memeberIds" multiple placeholder="请选择成员">
             <el-option
-              v-for="item in staffList" :key="item.empId" :label="item.empName" :value="item.empId">
+              v-for="item in memberList" :key="item.empId" :label="item.empName" :value="item.empId">
             </el-option>
           </el-select>
         </el-form-item>
@@ -114,10 +114,75 @@ export default {
         ]
       },
       timer: null,
-      lastTime: 0
+      lastTime: 0,
+      loading: false
     }
   },
   computed: {
+    leaderList () {
+      let leaderListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupDeputy) {
+        leaderListTemp.some((item, index) => {
+          if (this.form.tecGroupDeputy === item.empId) {
+            leaderListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.memeberIds) {
+        this.form.memeberIds.forEach(memeber => {
+          leaderListTemp.some((leader, index) => {
+            if (memeber === leader.empId) {
+              leaderListTemp.splice(index, 1)
+              return true
+            }
+          })
+        })
+      }
+      return leaderListTemp
+    },
+    deputyList () {
+      let deputyListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupLeader) {
+        deputyListTemp.some((item, index) => {
+          if (this.form.tecGroupLeader === item.empId) {
+            deputyListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.memeberIds) {
+        this.form.memeberIds.forEach(memeber => {
+          deputyListTemp.some((deputy, index) => {
+            if (memeber === deputy.empId) {
+              deputyListTemp.splice(index, 1)
+              return true
+            }
+          })
+        })
+      }
+      return deputyListTemp
+    },
+    memberList () {
+      let memberListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupDeputy) {
+        memberListTemp.some((item, index) => {
+          if (this.form.tecGroupDeputy === item.empId) {
+            memberListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.tecGroupLeader) {
+        memberListTemp.some((item, index) => {
+          if (this.form.tecGroupLeader === item.empId) {
+            memberListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      return memberListTemp
+    },
     ocHandler () {
       return this.handler
     }
@@ -146,6 +211,7 @@ export default {
       this.$throttle.throttle.apply(this, [this.add])
     },
     add () {
+      this.loading = true
       this.$refs['addTeamForm'].validate((valid) => {
         if (valid) {
           let addForm = {
@@ -164,11 +230,13 @@ export default {
               if (res.data.statuscode === 200) {
                 this.$parent.getTeamList()
                 this.closeDialog()
+                this.loading = false
                 this.$message({
                   type: 'success',
                   message: '添加成功'
                 })
               } else if (res.data.statuscode === 400 && res.data.msg === '添加组失败，该小组已存在！') {
+                this.loading = false
                 this.$message({
                   type: 'error',
                   message: '该类型同名小组已存在，换一个更酷的小组名称吧!',
@@ -177,6 +245,7 @@ export default {
               }
             })
         } else {
+          this.loading = false
           console.log('error submit!!')
           return false
         }

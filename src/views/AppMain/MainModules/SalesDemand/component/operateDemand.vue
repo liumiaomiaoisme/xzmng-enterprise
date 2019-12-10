@@ -80,7 +80,6 @@ export default {
     editDemand () {
       let that = this
       function doPost (api, dowhat) {
-        console.log(that.demandForm)
         that.$axios.fetchPost(api, that.demandForm)
           .then(res => {
             console.log(res)

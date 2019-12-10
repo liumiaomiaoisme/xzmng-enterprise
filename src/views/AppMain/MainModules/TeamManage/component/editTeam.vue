@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="编辑技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
+   <el-dialog v-loading.fullscreen.lock="loading" title="编辑技术小组" :visible.sync="ocHandler" class="add-team-container" :before-close="maskFake">
       <el-form :model="form" :rules="rules" ref="addTeamForm">
         <el-form-item label="组名称" :label-width="formLabelWidth" prop="tecGroupName">
           <el-input v-model="form.tecGroupName" autocomplete="off" placeholder="请输入组名称"></el-input>
@@ -11,19 +11,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="组长" :label-width="formLabelWidth" prop="tecGroupLeader">
-          <el-select v-model="form.tecGroupLeader" placeholder="请选择组长">
-            <el-option :label="item.empName" :value="item.empId" v-for="item in staffList" :key="item.empId"></el-option>
+          <el-select v-model="form.tecGroupLeader" placeholder="请选择组长" clearable>
+            <el-option :label="item.empName" :value="item.empId" v-for="item in leaderList" :key="item.empId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="副组长" :label-width="formLabelWidth" prop="tecGroupDeputy">
-          <el-select v-model="form.tecGroupDeputy" placeholder="请选择副组长">
-            <el-option :label="item.empName" :value="item.empId" v-for="item in staffList" :key="item.empId"></el-option>
+          <el-select v-model="form.tecGroupDeputy" placeholder="请选择副组长" clearable>
+            <el-option :label="item.empName" :value="item.empId" v-for="item in deputyList" :key="item.empId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="组成员" :label-width="formLabelWidth" prop="memeberIds">
           <el-select v-model="form.memeberIds" multiple placeholder="请选择成员">
             <el-option
-              v-for="item in staffList" :key="item.empId" :label="item.empName" :value="item.empId">
+              v-for="item in memberList" :key="item.empId" :label="item.empName" :value="item.empId">
             </el-option>
           </el-select>
         </el-form-item>
@@ -53,14 +53,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-popover placement="top-end" width="186" v-model="confirmVisible" class="pop-cancle">
-          <p>取消将会丢失已编辑的内容，确定取消吗？</p>
-          <div style="text-align: right; margin: 0">
-            <el-button size="mini" type="text" @click="confirmVisible = false">再想想</el-button>
-            <el-button type="primary" size="mini" @click="closeDialog">确定</el-button>
-          </div>
-          <el-button slot="reference" size="small">取 消</el-button>
-        </el-popover>
+        <el-button type="primary" size="small" @click="closeDialog">取 消</el-button>
         <el-button type="primary" size="small" @click="addForm">确 定</el-button>
       </div>
     </el-dialog>
@@ -71,7 +64,6 @@ export default {
   props: ['handler', 'id', 'form'],
   data () {
     return {
-      confirmVisible: false,
       relativePath: '',
       formLabelWidth: '100px',
       staffList: [],
@@ -101,10 +93,75 @@ export default {
         tecGroupExpiredDate: [
           { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ]
-      }
+      },
+      loading: false
     }
   },
   computed: {
+    leaderList () {
+      let leaderListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupDeputy) {
+        leaderListTemp.some((item, index) => {
+          if (this.form.tecGroupDeputy === item.empId) {
+            leaderListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.memeberIds) {
+        this.form.memeberIds.forEach(memeber => {
+          leaderListTemp.some((leader, index) => {
+            if (memeber === leader.empId) {
+              leaderListTemp.splice(index, 1)
+              return true
+            }
+          })
+        })
+      }
+      return leaderListTemp
+    },
+    deputyList () {
+      let deputyListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupLeader) {
+        deputyListTemp.some((item, index) => {
+          if (this.form.tecGroupLeader === item.empId) {
+            deputyListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.memeberIds) {
+        this.form.memeberIds.forEach(memeber => {
+          deputyListTemp.some((deputy, index) => {
+            if (memeber === deputy.empId) {
+              deputyListTemp.splice(index, 1)
+              return true
+            }
+          })
+        })
+      }
+      return deputyListTemp
+    },
+    memberList () {
+      let memberListTemp = JSON.parse(JSON.stringify(this.staffList))
+      if (this.form.tecGroupDeputy) {
+        memberListTemp.some((item, index) => {
+          if (this.form.tecGroupDeputy === item.empId) {
+            memberListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      if (this.form.tecGroupLeader) {
+        memberListTemp.some((item, index) => {
+          if (this.form.tecGroupLeader === item.empId) {
+            memberListTemp.splice(index, 1)
+            return true
+          }
+        })
+      }
+      return memberListTemp
+    },
     ocHandler () {
       return this.handler
     }
@@ -115,7 +172,6 @@ export default {
   methods: {
     maskFake () {},
     closeDialog () {
-      this.confirmVisible = false
       this.$emit('closeDialog')
       this.$refs['addTeamForm'].resetFields()
     },
@@ -130,6 +186,7 @@ export default {
       return `${y}-${mo}-${d} ${h}:${mi}:${s}`
     },
     addForm () {
+      this.loading = true
       this.$refs['addTeamForm'].validate((valid) => {
         if (valid) {
           if (this.form.tecGroupImg.indexOf('http://47.100.56.42:9876') === -1) {
@@ -152,9 +209,15 @@ export default {
               if (res.data.statuscode === 200) {
                 this.$parent.getTeamList()
                 this.closeDialog()
+                this.loading = false
+                this.$message({
+                  type: 'success',
+                  message: '编辑成功'
+                })
               }
             })
         } else {
+          this.loading = false
           console.log('error submit!!')
           return false
         }

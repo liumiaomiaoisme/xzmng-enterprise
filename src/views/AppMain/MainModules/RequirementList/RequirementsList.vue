@@ -67,9 +67,9 @@
       </el-table-column>
       <el-table-column label="状态操作" width="96">
         <template slot-scope="scope">
-          <el-button type="primary" v-if="scope.row.init" icon="el-icon-caret-right" round size="mini" @click="receiveRequirement(scope.row.tecDemandId)">领取</el-button>
-          <el-button type="success" v-if="scope.row.ing" icon="el-icon-finished" round size="mini" @click="endRequirement(scope.row.tecDemandId)">完成</el-button>
-          <el-button class="btn-status" type="danger" v-if="scope.row.ing || scope.row.over" icon="el-icon-close" round size="mini" @click="cancelRequirement(scope.row.tecDemandId)">取消</el-button>
+          <el-button type="primary" v-if="scope.row.init && scope.row.operate" icon="el-icon-caret-right" round size="mini" @click="receiveRequirement(scope.row.tecDemandId)">领取</el-button>
+          <el-button type="success" v-if="scope.row.ing && scope.row.operate" :disabled="!scope.row.showFinish" icon="el-icon-finished" round size="mini" @click="endRequirement(scope.row.tecDemandId)">完成</el-button>
+          <el-button class="btn-status" type="danger" v-if="(scope.row.ing || scope.row.over) && scope.row.showCancle" icon="el-icon-close" round size="mini" @click="cancelRequirement(scope.row.tecDemandId)">取消</el-button>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="88">
@@ -88,7 +88,7 @@
     <addRequirement></addRequirement>
     <editRequirement></editRequirement>
     <feedback></feedback>
-    <receive></receive>
+    <receive :userTeam="userTeam"></receive>
   </div>
 </template>
 
@@ -118,7 +118,8 @@ export default {
         modifierGroupName: '',
         emergencyLevel: null,
         createDateStart: ''
-      }
+      },
+      userTeam: []
     }
   },
   computed: {
@@ -133,8 +134,29 @@ export default {
     this.$store.commit('getAllStaff')
     this.$store.commit('getTeamOption')
     this.$store.commit('getProjectsForRequire')
+    // this.getUserTeam()
   },
   methods: {
+    // getUserTeam () {
+    //   this.$axios.fetchGet('/api/demand/group')// 获取用户为组长的组
+    //     .then(res => {
+    //       console.log(res)
+    //       if (res.data.statuscode === 200) {
+    //         let userGroupOrigin = res.data.content
+    //         if (userGroupOrigin) {
+    //           userGroupOrigin.forEach(item => {
+    //             let obj = {}
+    //             obj.value = item.tecGroupId
+    //             obj.label = item.tecGroupName
+    //             this.userTeam.push(obj)
+    //           })
+    //         }
+    //       } else if (res.data.statuscode === 400 && res.data.msg === '暂无小组信息') {
+    //         this.userTeam = null
+    //       }
+    //       console.log(this.userTeam)
+    //     })
+    // },
     receiveRequirement (id) {
       this.$store.commit('openReceiveRequire', id)
     },

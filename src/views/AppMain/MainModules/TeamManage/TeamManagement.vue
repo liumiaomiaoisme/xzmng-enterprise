@@ -241,10 +241,10 @@ export default {
             let leader = null
             for (let i of this.staffList) {
               if (i.empName === editForm.leaderName) {
-                deputy = i.empId
+                leader = i.empId
               }
               if (i.empName === editForm.deputyName) {
-                leader = i.empId
+                deputy = i.empId
               }
             }
             let typeId = null

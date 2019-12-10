@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="添加项目" :visible.sync="this.$store.state.addDialogVisible" class="project-dialog-container" :close-on-click-modal="false">
+   <el-dialog v-loading.fullscreen.lock="loading" title="添加项目" :visible.sync="this.$store.state.addDialogVisible" class="project-dialog-container" :close-on-click-modal="false">
       <el-form :model="addProjectForm" status-icon ref="addProjectForm" size="small" :rules="rules">
         <el-form-item label="项目名称" :label-width="formLabelWidth" prop="tecProjectName">
           <el-input v-model="addProjectForm.tecProjectName" autocomplete="off" placeholder="请输入项目名称"></el-input>
@@ -54,7 +54,7 @@
               <el-input type="number" v-model.number="addProjectForm.tecProjectCycle" autocomplete="off" placeholder="请输入项目周期"></el-input>
             </el-form-item>
             <el-form-item label="项目版本" :label-width="formLabelWidth" prop="tecProjectVersion">
-              <el-input v-model="addProjectForm.tecProjectVersion" autocomplete="off" placeholder="请输入项目版本"></el-input>
+              <el-autocomplete v-model="addProjectForm.tecProjectVersion" :fetch-suggestions="querySearch" placeholder="请项目版本"></el-autocomplete>
             </el-form-item>
             <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
               <el-upload
@@ -157,8 +157,13 @@ export default {
           { required: true, message: '请上传logo', trigger: 'blur' }
         ]
       },
-      lastTime: 0
+      lastTime: 0,
+      version: [],
+      loading: false
     }
+  },
+  mounted () {
+    this.version = this.loadVersion()
   },
   created () {
     this.$store.commit('getAllMember')
@@ -187,6 +192,24 @@ export default {
     }
   },
   methods: {
+    querySearch (queryString, cb) {
+      let version = this.version
+      let results = queryString ? version.filter(this.createFilter(queryString)) : version
+      // 调用 callback 返回建议列表的数据
+      cb(results)
+    },
+    createFilter (queryString) {
+      return (version) => {
+        return (version.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      }
+    },
+    loadVersion () {
+      return [
+        { 'value': 'ProductVersion1.1' },
+        { 'value': 'ProductVersion2.1' },
+        { 'value': 'TestVersion1.1' },
+        { 'value': 'TestVersion2.1' }]
+    },
     closeDialog () {
       this.confirmVisible = false
       this.$store.commit('closeAddDialog')
@@ -203,7 +226,7 @@ export default {
       this.$throttle.throttle.apply(this, [this.add])
     },
     add () {
-      console.log(1)
+      this.loading = true
       this.$refs['addProjectForm'].validate((valid) => {
         console.log(valid)
         if (valid) {
@@ -215,7 +238,6 @@ export default {
           addForm.tecProjectLogourl = 'http://47.100.56.42:9876' + this.relativePath
           this.$axios.fetchPost('/api/project/add', addForm)
             .then(res => {
-              console.log(res)
               if (res.data.statuscode === 200) {
                 this.$store.commit('getProjectList', {
                   currentPage: 1
@@ -226,11 +248,14 @@ export default {
                   message: '添加成功!'
                 })
               }
+              this.loading = false
             })
             .catch(err => {
+              this.loading = false
               console.log(err)
             })
         } else {
+          this.loading = false
           console.log('error submit!!')
           return false
         }

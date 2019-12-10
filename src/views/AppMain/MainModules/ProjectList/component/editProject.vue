@@ -1,5 +1,5 @@
 <template>
-   <el-dialog title="编辑项目" :visible.sync="this.$store.state.editDialogVisible" class="project-dialog-container" :before-close="maskFake">
+   <el-dialog v-loading.fullscreen.lock="loading" title="编辑项目" :visible.sync="this.$store.state.editDialogVisible" class="project-dialog-container" :close-on-click-modal="false">
       <el-form :model="addProjectForm" status-icon ref="addProjectForm" size="small" :rules="rules">
         <el-form-item label="项目名称" :label-width="formLabelWidth" prop="tecProjectName">
           <el-input v-model="addProjectForm.tecProjectName" autocomplete="off" placeholder="请输入项目名称"></el-input>
@@ -53,7 +53,7 @@
               <el-input type="number" v-model.number="addProjectForm.tecProjectCycle" autocomplete="off" placeholder="请输入项目周期"></el-input>
             </el-form-item>
             <el-form-item label="项目版本" :label-width="formLabelWidth" prop="tecProjectVersion">
-              <el-input v-model="addProjectForm.tecProjectVersion" autocomplete="off" placeholder="请输入项目版本"></el-input>
+              <el-autocomplete v-model="addProjectForm.tecProjectVersion" :fetch-suggestions="querySearch" placeholder="请项目版本"></el-autocomplete>
             </el-form-item>
             <el-form-item label="项目logo" :label-width="formLabelWidth" prop="tecProjectLogourl">
           <el-upload
@@ -144,11 +144,16 @@ export default {
         empId: [
           { required: true, message: '请选择成员', trigger: 'blur' }
         ]
-      }
+      },
+      loading: false,
+      version: []
     }
   },
   created () {
     this.$store.commit('getAllMember')
+  },
+  mounted () {
+    this.version = this.loadVersion()
   },
   computed: {
     addProjectForm () {
@@ -170,8 +175,26 @@ export default {
     }
   },
   methods: {
-    maskFake () {},
+    querySearch (queryString, cb) {
+      let version = this.version
+      let results = queryString ? version.filter(this.createFilter(queryString)) : version
+      // 调用 callback 返回建议列表的数据
+      cb(results)
+    },
+    createFilter (queryString) {
+      return (version) => {
+        return (version.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      }
+    },
+    loadVersion () {
+      return [
+        { 'value': 'ProductVersion1.1' },
+        { 'value': 'ProductVersion2.1' },
+        { 'value': 'TestVersion1.1' },
+        { 'value': 'TestVersion2.1' }]
+    },
     editProject () {
+      this.loading = true
       this.$refs['addProjectForm'].validate((valid) => {
         if (valid) {
           let addForm = { ...this.addProjectForm }
@@ -204,11 +227,14 @@ export default {
                 })
                 this.closeDialog()
               }
+              this.loading = false
             })
             .catch(err => {
               console.log(err)
+              this.loading = false
             })
         } else {
+          this.loading = false
           console.log('error submit!!')
           return false
         }

@@ -14,7 +14,7 @@ import KnowledgeShare from '@/views/AppMain/MainModules/KnowledgeShare/Knowledge
 import ProjectPhaseList from '@/views/AppMain/MainModules/ProjectPhaseList/ProjectPhaseList'
 import SalesDemandsList from '@/views/AppMain/MainModules/SalesDemand/SalesDemand'
 
-const TechLogin = () => import('@/views/Login/TechLogin')  // 路由懒加载
+const TechLogin = () => import('@/views/Login/TechLogin') // 路由懒加载
 Vue.use(Router)
 
 const router = new Router({

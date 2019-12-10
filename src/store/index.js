@@ -12,7 +12,10 @@ export default new Vuex.Store({
     userName: '',
     depName: '',
     posName: '',
+    userId: null,
     loading: false,
+    userGroup: [],
+    userGroupSelect: [],
     // 项目列表
     projectListTableData: [],
     projectListTotalCount: 0,
@@ -563,78 +566,108 @@ export default new Vuex.Store({
     },
     getRequirementList (state, data) {
       state.loading = true
-      axios.fetchGet('/api/demand/lists', {
-        currentPage: data.currentPage,
-        pageSize: state.requirementPageSize
-      }).then(res => {
-        if (res.data.statuscode === 200) {
-          state.requirementListTableData = res.data.content.list
-          state.requirementTotalCount = res.data.content.totalCount
-          for (let i of state.requirementListTableData) {
-            i.init = true
-            i.ing = false
-            i.over = false
-            i.cancel = false
-            if (i.tecDemandStatus === 0) {
-              i.tecDemandStatus = '未领取'
-            } else if (i.tecDemandStatus === 1) {
-              i.init = false
-              i.ing = true
-              i.tecDemandStatus = '进行中'
-            } else if (i.tecDemandStatus === 2) {
-              i.init = false
-              i.ing = false
-              i.over = true
-              i.tecDemandStatus = '已结束'
-            } else if (i.tecDemandStatus === 3) {
-              i.init = false
+      axios.fetchGet('/api/demand/group')
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.userGroup = res.data.content
+          }
+          return axios.fetchGet('/api/demand/lists', {
+            currentPage: data.currentPage,
+            pageSize: state.requirementPageSize
+          })
+        })
+        .then(res => {
+          if (res.data.statuscode === 200) {
+            state.requirementListTableData = res.data.content.list
+            state.requirementTotalCount = res.data.content.totalCount
+            console.log(state.requirementListTableData)
+            for (let i of state.requirementListTableData) {
+              i.init = true
               i.ing = false
               i.over = false
-              i.cancel = true
-              i.tecDemandStatus = '已取消'
-            }
-            if (i.tecDemandCreateDate !== undefined || null) {
-              this.commit('getFormatTime', i.tecDemandCreateDate)
-              i.tecDemandCreateDate = state.dateTmp
-            }
-            if (i.tecDemandExpectedRepairDate !== undefined || null) {
-              this.commit('getFormatTime', i.tecDemandExpectedRepairDate)
-              i.tecDemandExpectedRepairDate = state.dateTmp
-            }
-            if (i.tecDemandEmergencyLevel !== undefined || null) {
-              if (i.tecDemandEmergencyLevel === 0) {
-                i.tecDemandEmergencyLevel = '很紧急'
-              } else if (i.tecDemandEmergencyLevel === 1) {
-                i.tecDemandEmergencyLevel = '不紧急'
+              i.cancel = false
+              i.showFinish = false
+              i.operate = false
+              i.showCancle = false
+              if (state.depName === '技术部') {
+                i.operate = true
+              }
+              if (state.userId === i.tecDemandPromoter) {
+                i.showCancle = true
+              }
+              if (i.tecDemandModifierGroup) {
+                // 修改人id和登录用户id判断
+                state.userGroup.forEach(item => {
+                  if (item.tecGroupId === i.tecDemandModifierGroup) {
+                    i.showFinish = true
+                  }
+                })
+              } else if (i.tecDemandModifierPersonal) {
+                // 修改人id和登录用户id判断
+                if (state.userId === i.tecDemandModifierPersonal) {
+                  i.showFinish = true
+                }
+              }
+              if (i.tecDemandStatus === 0) {
+                i.tecDemandStatus = '未领取'
+              } else if (i.tecDemandStatus === 1) {
+                i.init = false
+                i.ing = true
+                i.tecDemandStatus = '进行中'
+              } else if (i.tecDemandStatus === 2) {
+                i.init = false
+                i.ing = false
+                i.over = true
+                i.tecDemandStatus = '已结束'
+              } else if (i.tecDemandStatus === 3) {
+                i.init = false
+                i.ing = false
+                i.over = false
+                i.cancel = true
+                i.tecDemandStatus = '已取消'
+              }
+              if (i.tecDemandCreateDate !== undefined || null) {
+                this.commit('getFormatTime', i.tecDemandCreateDate)
+                i.tecDemandCreateDate = state.dateTmp
+              }
+              if (i.tecDemandExpectedRepairDate !== undefined || null) {
+                this.commit('getFormatTime', i.tecDemandExpectedRepairDate)
+                i.tecDemandExpectedRepairDate = state.dateTmp
+              }
+              if (i.tecDemandEmergencyLevel !== undefined || null) {
+                if (i.tecDemandEmergencyLevel === 0) {
+                  i.tecDemandEmergencyLevel = '很紧急'
+                } else if (i.tecDemandEmergencyLevel === 1) {
+                  i.tecDemandEmergencyLevel = '不紧急'
+                }
+              }
+              if (!i.tecDemandModifierPersonalName && !i.tecDemandModifierGroupName) {
+                i.Modifier = ''
+              } else if (!i.tecDemandModifierPersonalName) {
+                i.Modifier = '修改组--' + i.tecDemandModifierGroupName
+              } else {
+                i.Modifier = '修改人--' + i.tecDemandModifierPersonalName
+              }
+              if (i.tecDemandAnnex) {
+                i.fileList = i.tecDemandAnnex.split(',')
+                i.docList = []
+                i.imgList = []
+                i.fileList.forEach(item => {
+                  if (item.indexOf('.doc') === -1) {
+                    i.imgList.push(item)
+                  } else {
+                    i.docList.push(item)
+                  }
+                })
               }
             }
-            if (!i.tecDemandModifierPersonalName && !i.tecDemandModifierGroupName) {
-              i.Modifier = ''
-            } else if (!i.tecDemandModifierPersonalName) {
-              i.Modifier = '修改组--' + i.tecDemandModifierGroupName
-            } else {
-              i.Modifier = '修改人--' + i.tecDemandModifierPersonalName
-            }
-            if (i.tecDemandAnnex) {
-              i.fileList = i.tecDemandAnnex.split(',')
-              i.docList = []
-              i.imgList = []
-              i.fileList.forEach(item => {
-                if (item.indexOf('.doc') === -1) {
-                  i.imgList.push(item)
-                } else {
-                  i.docList.push(item)
-                }
-              })
-            }
           }
-        }
-        if (res.data.statuscode === 400 && res.data.msg === '') {
-          state.requirementListTableData = []
-          state.requirementTotalCount = 0
-        }
-        state.loading = false
-      })
+          if (res.data.statuscode === 400 && res.data.msg === '') {
+            state.requirementListTableData = []
+            state.requirementTotalCount = 0
+          }
+          state.loading = false
+        })
     },
     // 会议列表
     editEndMeeting (state, data) {
@@ -1240,6 +1273,8 @@ export default new Vuex.Store({
       axios.fetchGet('/api/current/user')
         .then(res => {
           userInfo = res.data.content
+          state.userId = userInfo.empId
+          state.userName = userInfo.empName
           state.userName = userInfo.empName
           return axios.fetchGet('/api/depName/' + userInfo.empDepartmentId)
         })
